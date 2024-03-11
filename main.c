@@ -12,7 +12,6 @@ void drawQuitButton(SDL_Renderer *renderer, SDL_Rect *quitButton, SDL_Rect *chan
     return;
 }
 
-
 int main(int argc, char *argv[])
 {
     (void)argc;
