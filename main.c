@@ -18,6 +18,7 @@ int main(int argc, char *argv[])
     }
     /* On agit sur la fenêtre ici */
     SDL_Delay(3000);
+    SDL_DestroyWindow(window);
     SDL_Quit();
     return EXIT_SUCCESS;
 }
