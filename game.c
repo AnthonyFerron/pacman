@@ -8,6 +8,45 @@ SDL_Texture* backgroundTexture = NULL;
 SDL_Texture* dracoTexture = NULL;
 SDL_Rect dracoRect;
 
+int map[MAP_HEIGHT][MAP_WIDTH] = {
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1},
+    {1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1},
+    {1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1},
+    {1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+};
+
+int isCollision(int x, int y) {
+    int tileX = x / TILE_SIZE;
+    int tileY = y / TILE_SIZE;
+    return map[tileY][tileX] == 1;
+}
+
+void drawMap(SDL_Renderer* renderer) {
+    SDL_Rect tileRect;
+    tileRect.w = TILE_SIZE;
+    tileRect.h = TILE_SIZE;
+
+    for (int y = 0; y < MAP_HEIGHT; ++y) {
+        for (int x = 0; x < MAP_WIDTH; ++x) {
+            tileRect.x = x * TILE_SIZE;
+            tileRect.y = y * TILE_SIZE;
+
+            if (map[y][x] == 1) {
+                // Draw wall
+                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White color
+            } else {
+                // Draw empty space
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Black color
+            }
+
+            SDL_RenderFillRect(renderer, &tileRect);
+        }
+    }
+}
 
 void initGame() {
     // Initialize SDL
@@ -30,14 +69,15 @@ void initGame() {
         return;
     }
 
-    // Load background texture
-    SDL_Surface* backgroundSurface = SDL_LoadBMP("Maps.bmp");
-    if (backgroundSurface == NULL) {
-        printf("Failed to load background image! SDL_Error: %s\n", SDL_GetError());
-        return;
-    }
-    backgroundTexture = SDL_CreateTextureFromSurface(renderer, backgroundSurface);
-    SDL_FreeSurface(backgroundSurface);
+    // // Load background texture
+    // SDL_Surface* backgroundSurface = SDL_LoadBMP("Maps.bmp");
+    // if (backgroundSurface == NULL) {
+    //     printf("Failed to load background image! SDL_Error: %s\n", SDL_GetError());
+    //     return;
+    // }
+    // backgroundTexture = SDL_CreateTextureFromSurface(renderer, backgroundSurface);
+    // SDL_FreeSurface(backgroundSurface);
+
 
     // Load draco texture
     SDL_Surface* dracoSurface = SDL_LoadBMP("draco.bmp");
@@ -93,10 +133,15 @@ void initGame() {
         // Vérifier si le nouveau mouvement ferait sortir le personnage de l'écran
         if (dracoRect.x + dx >= 0 && dracoRect.x + dx + dracoRect.w <= WINDOW_WIDTH &&
             dracoRect.y + dy >= 0 && dracoRect.y + dy + dracoRect.h <= WINDOW_HEIGHT) {
-            // Mettre à jour la position du personnage seulement tous les 2 frames
-            if (frameCounter % 2 == 0) {
-                dracoRect.x += dx;
-                dracoRect.y += dy;
+            // Vérifier si le mouvement ferait entrer Draco en collision avec un mur
+            int newX = (dracoRect.x + dx) / TILE_SIZE;
+            int newY = (dracoRect.y + dy) / TILE_SIZE;
+            if (map[newY][newX] == 0) { // Assurez-vous que 0 représente un espace vide dans votre tableau `map`
+                // Mettre à jour la position du personnage seulement tous les 2 frames
+                if (frameCounter % 2 == 0) {
+                    dracoRect.x += dx;
+                    dracoRect.y += dy;
+                }
             }
         }
         
@@ -107,7 +152,8 @@ void initGame() {
         SDL_RenderClear(renderer);
 
         // Render the background texture
-        SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
+        // SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
+        drawMap(renderer);
 
         // Render the draco texture
         SDL_RenderCopy(renderer, dracoTexture, NULL, &dracoRect);
