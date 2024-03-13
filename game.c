@@ -8,6 +8,7 @@ SDL_Texture* backgroundTexture = NULL;
 SDL_Texture* dracoTexture = NULL;
 SDL_Rect dracoRect;
 
+
 void initGame() {
     // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -52,13 +53,15 @@ void initGame() {
     dracoRect.y = (WINDOW_HEIGHT - dracoSurface->h) / 2;
     dracoRect.w = dracoSurface->w;
     dracoRect.h = dracoSurface->h;
+    dracoRect.w *= 2;
+    dracoRect.h *= 2;
 
-       // Définir la vitesse et la direction du personnage
+    // Définir la vitesse et la direction du personnage
     int speed = 1;
-    int dx = speed, dy = 0;
+    int dx = 0, dy = 0;
+    int frameCounter = 0;
 
-   // Boucle principale
-
+    // Boucle principale
     SDL_Event event;
     int quit = 0;
     while (!quit) {
@@ -90,10 +93,15 @@ void initGame() {
         // Vérifier si le nouveau mouvement ferait sortir le personnage de l'écran
         if (dracoRect.x + dx >= 0 && dracoRect.x + dx + dracoRect.w <= WINDOW_WIDTH &&
             dracoRect.y + dy >= 0 && dracoRect.y + dy + dracoRect.h <= WINDOW_HEIGHT) {
-            // Mettre à jour la position du personnage
-            dracoRect.x += dx;
-            dracoRect.y += dy;
+            // Mettre à jour la position du personnage seulement tous les 2 frames
+            if (frameCounter % 2 == 0) {
+                dracoRect.x += dx;
+                dracoRect.y += dy;
+            }
         }
+        
+
+        frameCounter++;
 
         // Clear the renderer
         SDL_RenderClear(renderer);
