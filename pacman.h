@@ -1,15 +1,17 @@
-#ifndef PACMAN_H
-#define PACMAN_H
+#ifndef PACMAN
+#define PACMAN
 
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <stdbool.h>
-#include <string.h>
-#include <time.h>
-#include <unistd.h>
 
+#define WINDOW_WIDTH 1250
+#define WINDOW_HEIGHT 750
 
-
+int theMain();
+#include "game.c"
 
 
 #endif
