@@ -1,7 +1,5 @@
 #include "pacman.h"
 
-
-
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 SDL_Texture* backgroundTexture = NULL;
@@ -78,7 +76,6 @@ void initGame() {
     // }
     // backgroundTexture = SDL_CreateTextureFromSurface(renderer, backgroundSurface);
     // SDL_FreeSurface(backgroundSurface);
-
 
     // Load draco texture
     SDL_Surface* dracoSurface = SDL_LoadBMP("draco.bmp");
@@ -159,9 +156,6 @@ void initGame() {
             }
             // Si une collision se produit, ne pas déplacer Draco
         }
-    
-        
-
 
         // Clear the renderer
         SDL_RenderClear(renderer);
