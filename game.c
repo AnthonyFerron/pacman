@@ -91,8 +91,8 @@ void initGame() {
     dracoRect.y = 600;
     dracoRect.w = dracoSurface->w;
     dracoRect.h = dracoSurface->h;
-    dracoRect.w = 99;
-    dracoRect.h = 99;
+    dracoRect.w = TILE_SIZE - 1;
+    dracoRect.h = TILE_SIZE - 1;
 
     // Définir la vitesse et la direction du personnage
     int speed = 1;
