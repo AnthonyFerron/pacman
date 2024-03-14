@@ -9,14 +9,14 @@ SDL_Texture* dracoTexture = NULL;
 SDL_Rect dracoRect;
 
 int map[MAP_HEIGHT][MAP_WIDTH] = {
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1},
-    {1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1},
-    {1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1},
-    {1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+    {1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1},
+    {1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1},
+    {1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1},
+    {1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1},
+    {1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1},
+    {1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
 };
 
 int isCollision(int x, int y) {
@@ -32,15 +32,16 @@ void drawMap(SDL_Renderer* renderer) {
 
     for (int y = 0; y < MAP_HEIGHT; ++y) {
         for (int x = 0; x < MAP_WIDTH; ++x) {
+
             tileRect.x = x * TILE_SIZE;
             tileRect.y = y * TILE_SIZE;
 
             if (map[y][x] == 1) {
                 // Draw wall
-                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White color
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Black color
             } else {
                 // Draw empty space
-                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Black color
+                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White color
             }
 
             SDL_RenderFillRect(renderer, &tileRect);
@@ -89,17 +90,17 @@ void initGame() {
     SDL_FreeSurface(dracoSurface);
 
     // Set initial position of draco
-    dracoRect.x = (WINDOW_WIDTH - dracoSurface->w) / 2;
-    dracoRect.y = (WINDOW_HEIGHT - dracoSurface->h) / 2;
+    dracoRect.x = 400;
+    dracoRect.y = 600;
     dracoRect.w = dracoSurface->w;
     dracoRect.h = dracoSurface->h;
-    dracoRect.w *= 2;
-    dracoRect.h *= 2;
+    dracoRect.w = 99;
+    dracoRect.h = 99;
 
     // Définir la vitesse et la direction du personnage
     int speed = 1;
     int dx = 0, dy = 0;
-    int frameCounter = 0;
+    int last_dx = 0, last_dy = 0; // Ajouter ces lignes pour stocker la dernière direction valide
 
     // Boucle principale
     SDL_Event event;
@@ -130,23 +131,37 @@ void initGame() {
             }
         }
 
-        // Vérifier si le nouveau mouvement ferait sortir le personnage de l'écran
-        if (dracoRect.x + dx >= 0 && dracoRect.x + dx + dracoRect.w <= WINDOW_WIDTH &&
-            dracoRect.y + dy >= 0 && dracoRect.y + dy + dracoRect.h <= WINDOW_HEIGHT) {
-            // Vérifier si le mouvement ferait entrer Draco en collision avec un mur
-            int newX = (dracoRect.x + dx) / TILE_SIZE;
-            int newY = (dracoRect.y + dy) / TILE_SIZE;
-            if (map[newY][newX] == 0) { // Assurez-vous que 0 représente un espace vide dans votre tableau `map`
-                // Mettre à jour la position du personnage seulement tous les 2 frames
-                if (frameCounter % 2 == 0) {
-                    dracoRect.x += dx;
-                    dracoRect.y += dy;
-                }
+        // Calculer les nouvelles positions proposées pour tous les coins de la hitbox
+        int newX1 = (dracoRect.x + dx) / TILE_SIZE;
+        int newY1 = (dracoRect.y + dy) / TILE_SIZE;
+        int newX2 = (dracoRect.x + dx + dracoRect.w) / TILE_SIZE;
+        int newY2 = (dracoRect.y + dy + dracoRect.h) / TILE_SIZE;
+
+        // Vérifier si le mouvement proposé ferait entrer Draco en collision avec un mur
+        if (map[newY1][newX1] == 0 && map[newY1][newX2] == 0 && map[newY2][newX1] == 0 && map[newY2][newX2] == 0) {
+            // Si toutes les nouvelles positions sont des cases vides (0), alors déplacer Draco
+            dracoRect.x += dx;
+            dracoRect.y += dy;
+            last_dx = dx; // Mettre à jour la dernière direction valide
+            last_dy = dy;
+        } else {
+            // Calculer les nouvelles positions proposées pour tous les coins de la hitbox en utilisant la dernière direction valide
+            newX1 = (dracoRect.x + last_dx) / TILE_SIZE;
+            newY1 = (dracoRect.y + last_dy) / TILE_SIZE;
+            newX2 = (dracoRect.x + last_dx + dracoRect.w) / TILE_SIZE;
+            newY2 = (dracoRect.y + last_dy + dracoRect.h) / TILE_SIZE;
+
+            // Vérifier si le mouvement dans la dernière direction valide ferait entrer Draco en collision avec un mur
+            if (map[newY1][newX1] == 0 && map[newY1][newX2] == 0 && map[newY2][newX1] == 0 && map[newY2][newX2] == 0) {
+                // Si toutes les nouvelles positions sont des cases vides (0), alors déplacer Draco
+                dracoRect.x += last_dx;
+                dracoRect.y += last_dy;
             }
+            // Si une collision se produit, ne pas déplacer Draco
         }
+    
         
 
-        frameCounter++;
 
         // Clear the renderer
         SDL_RenderClear(renderer);
