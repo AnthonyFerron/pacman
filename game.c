@@ -3,8 +3,8 @@
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 SDL_Texture* backgroundTexture = NULL;
-SDL_Texture* dracoTexture = NULL;
-SDL_Rect dracoRect;
+SDL_Texture* playerTexture = NULL;
+SDL_Rect playerRect;
 
 int map[MAP_HEIGHT][MAP_WIDTH] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -77,22 +77,22 @@ void initGame() {
     // backgroundTexture = SDL_CreateTextureFromSurface(renderer, backgroundSurface);
     // SDL_FreeSurface(backgroundSurface);
 
-    // Load draco texture
-    SDL_Surface* dracoSurface = SDL_LoadBMP("./sprites/draco.bmp");
-    if (dracoSurface == NULL) {
-        printf("Failed to load draco image! SDL_Error: %s\n", SDL_GetError());
+    // Load player texture
+    SDL_Surface* playerSurface = SDL_LoadBMP("./sprites/draco.bmp");
+    if (playerSurface == NULL) {
+        printf("Failed to load player image! SDL_Error: %s\n", SDL_GetError());
         return;
     }
-    dracoTexture = SDL_CreateTextureFromSurface(renderer, dracoSurface);
-    SDL_FreeSurface(dracoSurface);
+    playerTexture = SDL_CreateTextureFromSurface(renderer, playerSurface);
+    SDL_FreeSurface(playerSurface);
 
-    // Set initial position of draco
-    dracoRect.x = 400;
-    dracoRect.y = 600;
-    dracoRect.w = dracoSurface->w;
-    dracoRect.h = dracoSurface->h;
-    dracoRect.w = TILE_SIZE - 1;
-    dracoRect.h = TILE_SIZE - 1;
+    // Set initial position of player
+    playerRect.x = 400;
+    playerRect.y = 600;
+    playerRect.w = playerSurface->w;
+    playerRect.h = playerSurface->h;
+    playerRect.w = TILE_SIZE - 1;
+    playerRect.h = TILE_SIZE - 1;
 
     // Définir la vitesse et la direction du personnage
     int speed = 1;
@@ -129,35 +129,35 @@ void initGame() {
         }
 
         // Calculer les nouvelles positions proposées pour tous les coins de la hitbox
-        int newX1 = (dracoRect.x + dx) / TILE_SIZE;
-        int newY1 = (dracoRect.y + dy) / TILE_SIZE;
-        int newX2 = (dracoRect.x + dx + dracoRect.w) / TILE_SIZE;
-        int newY2 = (dracoRect.y + dy + dracoRect.h) / TILE_SIZE;
+        int newX1 = (playerRect.x + dx) / TILE_SIZE;
+        int newY1 = (playerRect.y + dy) / TILE_SIZE;
+        int newX2 = (playerRect.x + dx + playerRect.w) / TILE_SIZE;
+        int newY2 = (playerRect.y + dy + playerRect.h) / TILE_SIZE;
 
-        // Vérifier si le mouvement proposé ferait entrer Draco en collision avec un mur
+        // Vérifier si le mouvement proposé ferait entrer player en collision avec un mur
         if (map[newY1][newX1] == 0 && map[newY1][newX2] == 0 && map[newY2][newX1] == 0 && map[newY2][newX2] == 0) {
-            // Si toutes les nouvelles positions sont des cases vides (0), alors déplacer Draco
-            dracoRect.x += dx;
-            dracoRect.y += dy;
+            // Si toutes les nouvelles positions sont des cases vides (0), alors déplacer player
+            playerRect.x += dx;
+            playerRect.y += dy;
             last_dx = dx; // Mettre à jour la dernière direction valide
             last_dy = dy;
         } else {
             // Calculer les nouvelles positions proposées pour tous les coins de la hitbox en utilisant la dernière direction valide
-            newX1 = (dracoRect.x + last_dx) / TILE_SIZE;
-            newY1 = (dracoRect.y + last_dy) / TILE_SIZE;
-            newX2 = (dracoRect.x + last_dx + dracoRect.w) / TILE_SIZE;
-            newY2 = (dracoRect.y + last_dy + dracoRect.h) / TILE_SIZE;
+            newX1 = (playerRect.x + last_dx) / TILE_SIZE;
+            newY1 = (playerRect.y + last_dy) / TILE_SIZE;
+            newX2 = (playerRect.x + last_dx + playerRect.w) / TILE_SIZE;
+            newY2 = (playerRect.y + last_dy + playerRect.h) / TILE_SIZE;
 
-            // Vérifier si le mouvement dans la dernière direction valide ferait entrer Draco en collision avec un mur
+            // Vérifier si le mouvement dans la dernière direction valide ferait entrer player en collision avec un mur
             if (map[newY1][newX1] == 0 && map[newY1][newX2] == 0 && map[newY2][newX1] == 0 && map[newY2][newX2] == 0) {
-                // Si toutes les nouvelles positions sont des cases vides (0), alors déplacer Draco
-                dracoRect.x += last_dx;
-                dracoRect.y += last_dy;
+                // Si toutes les nouvelles positions sont des cases vides (0), alors déplacer player
+                playerRect.x += last_dx;
+                playerRect.y += last_dy;
             }
-            // Si une collision se produit, ne pas déplacer Draco
+            // Si une collision se produit, ne pas déplacer player
         }
 
-        
+
 
         // Clear the renderer
         SDL_RenderClear(renderer);
@@ -166,8 +166,8 @@ void initGame() {
         // SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
         drawMap(renderer);
 
-        // Render the draco texture
-        SDL_RenderCopy(renderer, dracoTexture, NULL, &dracoRect);
+        // Render the player texture
+        SDL_RenderCopy(renderer, playerTexture, NULL, &playerRect);
 
         // Update the renderer
         SDL_RenderPresent(renderer);
@@ -175,7 +175,7 @@ void initGame() {
 
     // Cleanup
     SDL_DestroyTexture(backgroundTexture);
-    SDL_DestroyTexture(dracoTexture);
+    SDL_DestroyTexture(playerTexture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
