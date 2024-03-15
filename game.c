@@ -78,7 +78,7 @@ void initGame() {
     // SDL_FreeSurface(backgroundSurface);
 
     // Load draco texture
-    SDL_Surface* dracoSurface = SDL_LoadBMP("draco.bmp");
+    SDL_Surface* dracoSurface = SDL_LoadBMP("./sprites/draco.bmp");
     if (dracoSurface == NULL) {
         printf("Failed to load draco image! SDL_Error: %s\n", SDL_GetError());
         return;
@@ -156,6 +156,8 @@ void initGame() {
             }
             // Si une collision se produit, ne pas déplacer Draco
         }
+
+        
 
         // Clear the renderer
         SDL_RenderClear(renderer);
