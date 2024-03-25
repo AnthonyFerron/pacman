@@ -9,9 +9,9 @@
 
 #define WINDOW_WIDTH 1250
 #define WINDOW_HEIGHT 750
-#define TILE_SIZE 100
-#define MAP_WIDTH 12
-#define MAP_HEIGHT 8
+#define TILE_SIZE 50
+#define MAP_WIDTH 24
+#define MAP_HEIGHT 15
 
 int theMain();
 #include "game.c"
