@@ -9,21 +9,21 @@ SDL_Rect playerRect;
 //initialisation de la map en 24 par 15
 
 int map[MAP_HEIGHT][MAP_WIDTH] = {
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0},
-    {0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1},
-    {1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1},
-    {0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0},
-    {1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1},
-    {0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0},
-    {0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0},
-    {0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0},
-    {0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0},
-    {0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+    {1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1},
+    {1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1},
+    {1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1},
+    {1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1},
+    {1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1},
+    {1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1},
+    {1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1},
+    {1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1},
+    {1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1},
+    {1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1},
+    {1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1},
+    {1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 };
 
 
@@ -46,10 +46,10 @@ void drawMap(SDL_Renderer* renderer) {
 
             if (map[y][x] == 1) {
                 // Draw wall
-                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // 0, 0, 0, 255 Black color
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Black color
             } else {
                 // Draw empty space
-                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // 255, 255, 255, 255 White color
+                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White color
             }
 
             SDL_RenderFillRect(renderer, &tileRect);
@@ -97,8 +97,8 @@ void initGame() {
     SDL_FreeSurface(playerSurface);
 
     // Set initial position of player
-    playerRect.x = 600;
-    playerRect.y = 350;
+    playerRect.x = 400;
+    playerRect.y = 650;
     playerRect.w = playerSurface->w;
     playerRect.h = playerSurface->h;
     playerRect.w = TILE_SIZE - 1;
@@ -145,29 +145,24 @@ void initGame() {
         int newY2 = (playerRect.y + dy + playerRect.h) / TILE_SIZE;
 
         // Vérifier si le mouvement proposé ferait entrer player en collision avec un mur
-            if (newX1 >= 0 && newX2 < 24 && newY1 >= 0 && newY2 < 15 &&
-                map[newY1][newX1] == 0 && map[newY1][newX2] == 0 && map[newY2][newX1] == 0 && map[newY2][newX2] == 0) {
-                // Si toutes les nouvelles positions sont des cases vides (0), alors déplacer player
-                playerRect.x += dx;
-                playerRect.y += dy;
-                last_dx = dx; // Mettre à jour la dernière direction valide
-                last_dy = dy;
-            } else {
-                // Calculer les nouvelles positions proposées pour tous les coins de la hitbox en utilisant la dernière direction valide
-                newX1 = (playerRect.x + last_dx) / TILE_SIZE;
-                newY1 = (playerRect.y + last_dy) / TILE_SIZE;
-                newX2 = (playerRect.x + last_dx + playerRect.w) / TILE_SIZE;
-                newY2 = (playerRect.y + last_dy + playerRect.h) / TILE_SIZE;
+        if (map[newY1][newX1] == 0 && map[newY1][newX2] == 0 && map[newY2][newX1] == 0 && map[newY2][newX2] == 0) {
+            // Si toutes les nouvelles positions sont des cases vides (0), alors déplacer player
+            playerRect.x += dx;
+            playerRect.y += dy;
+            last_dx = dx; // Mettre à jour la dernière direction valide
+            last_dy = dy;
+        } else {
+            // Calculer les nouvelles positions proposées pour tous les coins de la hitbox en utilisant la dernière direction valide
+            newX1 = (playerRect.x + last_dx) / TILE_SIZE;
+            newY1 = (playerRect.y + last_dy) / TILE_SIZE;
+            newX2 = (playerRect.x + last_dx + playerRect.w) / TILE_SIZE;
+            newY2 = (playerRect.y + last_dy + playerRect.h) / TILE_SIZE;
 
-                // Vérifier si le mouvement dans la dernière direction valide ferait entrer player en collision avec un mur
-                // et si les nouvelles coordonnées sont à l'intérieur des limites de la carte
-                if (newX1 >= 0 && newX2 < 24 && newY1 >= 0 && newY2 < 15 &&
-                    map[newY1][newX1] == 0 && map[newY1][newX2] == 0 && map[newY2][newX1] == 0 && map[newY2][newX2] == 0) {
-                    // Si toutes les nouvelles positions sont des cases vides (0), alors déplacer player
-                    playerRect.x += last_dx;
-                    playerRect.y += last_dy;
-                }
-                // Si une collision se produit, ne pas déplacer player
+            // Vérifier si le mouvement dans la dernière direction valide ferait entrer player en collision avec un mur
+            if (map[newY1][newX1] == 0 && map[newY1][newX2] == 0 && map[newY2][newX1] == 0 && map[newY2][newX2] == 0) {
+                // Si toutes les nouvelles positions sont des cases vides (0), alors déplacer player
+                playerRect.x += last_dx;
+                playerRect.y += last_dy;
             }
             // Si une collision se produit, ne pas déplacer player
         }
