@@ -10,7 +10,7 @@
 #define WINDOW_WIDTH 1250
 #define WINDOW_HEIGHT 750
 #define TILE_SIZE 50
-#define MAP_WIDTH 24
+#define MAP_WIDTH 25
 #define MAP_HEIGHT 15
 
 int theMain();
