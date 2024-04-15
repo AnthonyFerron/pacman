@@ -5,106 +5,122 @@ void initGame(){
     printf("jeu");
 }
 
-
-int setWindowColor(SDL_Renderer *renderer, SDL_Color color)
-{
-    if(SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a) < 0)
-        return -1;
-    if(SDL_RenderClear(renderer) < 0)
-        return -1;
-    return 0;  
+void initlead(){
+    printf("leaderbord");
 }
 
-int main(int argc, char *argv[])
-{
-    SDL_Window *window = NULL;
-    SDL_Renderer *renderer = NULL;
-    SDL_Event events;
-    SDL_Color white = {255, 255, 255, 255};
-    SDL_Color red = {255, 0, 0, 255};
-    SDL_Color green = {68, 255, 0, 255};
-    SDL_Point point[640];
-    int statut = EXIT_FAILURE;
-    bool quit = false;
+void initRules(){
+    printf("rules");
+}
 
+SDL_Texture* loadTexture(const char* path, SDL_Renderer* renderer) {
+    // Load image at specified path
+    SDL_Surface* loadedSurface = SDL_LoadBMP(path);
+    if (!loadedSurface) {
+        printf("Unable to load image %s! SDL Error: %s\n", path, SDL_GetError());
+        return NULL;
+    }
+
+    // Create texture from surface pixels
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, loadedSurface);
+    if (!texture) {
+        printf("Unable to create texture from %s! SDL Error: %s\n", path, SDL_GetError());
+    }
+
+    // Get rid of old loaded surface
+    SDL_FreeSurface(loadedSurface);
+
+    return texture;
+}
+
+int main(int argc, char* argv[]) {
+    // Initialize SDL
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
+        return 1;
+    }
+
+    // Create window
+    SDL_Window* window = SDL_CreateWindow("Image Background", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1250, 750, SDL_WINDOW_SHOWN);
     
-    /* Initialisation, création de la fenêtre et du renderer. */
-    if(0 != SDL_Init(SDL_INIT_VIDEO))
-    {
-        fprintf(stderr, "Erreur SDL_Init : %s", SDL_GetError());
-        goto Quit;
+    if (!window) {
+        printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
+        return 1;
     }
-    window = SDL_CreateWindow("SDL2", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                              1250, 750, SDL_WINDOW_SHOWN);
-    if(NULL == window)
-    {
-        fprintf(stderr, "Erreur SDL_CreateWindow : %s", SDL_GetError());
-        goto Quit;
-    }
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if(NULL == renderer)
-    {
-        fprintf(stderr, "Erreur SDL_CreateRenderer : %s", SDL_GetError());
-        goto Quit;
-    }
-    SDL_Rect button1 = {80, 650, 180, 60};
-    SDL_Rect button2 = {310, 650, 180, 60};
-    SDL_Rect button3 = {540, 650, 180, 60};
-    SDL_Rect button4 = {770, 650, 180, 60};
-    SDL_Rect button5 = {1000, 650, 180, 60};
 
-    while( !quit ) {
-        while (SDL_PollEvent(&events)) {
-            switch(events.type){
+    // Create renderer for window
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    if (!renderer) {
+        printf("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
+        return 1;
+    }
+
+    // Load image
+    SDL_Texture* backgroundTexture = loadTexture("Acceuil.bmp", renderer);
+    if (!backgroundTexture) {
+        return 1;
+    }
+    SDL_Rect button1 = {80, 650, 380, 90};
+    SDL_Rect button2 = {310, 650, 380, 90};
+    SDL_Rect button3 = {540, 650, 380, 90};
+    // Main loop flag
+    int quit = false;
+    SDL_Event e;
+
+    // Main loop
+    while (!quit) {
+        // Handle events on queue
+        while (SDL_PollEvent(&e)) {
+            switch(e.type){
                 case SDL_WINDOWEVENT:
-                    if (events.window.event == SDL_WINDOWEVENT_CLOSE)
+                    if (e.window.event == SDL_WINDOWEVENT_CLOSE)
                         quit = true;
                         break;
-                case SDL_KEYDOWN:
-                    SDL_Log("+key");
-
-                    if (events.key.keysym.scancode == SDL_SCANCODE_W)
-                        SDL_Log("Scancode W");
-
-                    if (events.key.keysym.sym == SDLK_w)
-                        SDL_Log("Keycode W");
-
-                    if (events.key.keysym.sym == SDLK_z)
-                        SDL_Log("Keycode Z");
-
-                    break;
                 case SDL_MOUSEBUTTONDOWN: // Click de souris relâché
                     int x = 0;
                     int y = 0;
                     SDL_GetMouseState(&x, &y);
-                    if(button5.x<x && button5.y<y && (button5.w+button5.x)>x && (button5.h+button5.y)>y)
+                    if(1192<x && 690<y && 1235>x && 740>y){
                         quit = true;
                         break;
-                    if(button1.x<x && button1.y<y && 260>x && 710>y)
+                    }
+                    if(434<x && 293<y && 814>x && 383>y){
                         initGame();
+                        break;
+                    }
+                    if(434<x && 309<y && 814>x && 399>y){
+                        initlead();
+                        break;
+                    }
+                    if(434<x && 325<y && 814>x && 415>y)
+                        initRules();
                         break;
             }
         }
-        setWindowColor(renderer, white);
-        SDL_SetRenderDrawColor(renderer, green.r, green.g, green.b, green.a);
-        SDL_RenderFillRect(renderer, &button1); 
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderFillRect(renderer, &button2); 
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderFillRect(renderer, &button3); 
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderFillRect(renderer, &button4);
-        SDL_SetRenderDrawColor(renderer, red.r, red.g, red.b, red.a);
-        SDL_RenderFillRect(renderer, &button5);  
+
+        // Clear screen
+        SDL_RenderClear(renderer);
+
+        // Render background texture
+        SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
+
+        // Update screen
         SDL_RenderPresent(renderer);
-        statut = EXIT_SUCCESS;
     }
 
-Quit:
-    if(NULL != renderer)
-        SDL_DestroyRenderer(renderer);
-    if(NULL != window)
-        SDL_DestroyWindow(window);
+    // Free resources and close SDL
+    SDL_DestroyTexture(backgroundTexture);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
     SDL_Quit();
-    return statut;
+
+    return 0;
 }
+
+// SDL_Rect img = {0, 0, 1250, 750};
+
+// SDL_Rect button4 = {1000, 650, 180, 60};
+// SDL_Event events;
+
+
+
