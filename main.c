@@ -1,10 +1,6 @@
 #include <SDL2/SDL.h>
 #include "pacman.h"
 
-void initGame(){
-    printf("jeu");
-}
-
 void initlead(){
     printf("leaderbord");
 }
@@ -33,7 +29,7 @@ SDL_Texture* loadTexture(const char* path, SDL_Renderer* renderer) {
     return texture;
 }
 
-int main(int argc, char* argv[]) {
+int theMain(int argc, char* argv[]) {
     // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
@@ -85,6 +81,9 @@ int main(int argc, char* argv[]) {
                         break;
                     }
                     if(434<x && 293<y && 814>x && 383>y){
+                        SDL_DestroyRenderer(renderer);
+                        SDL_DestroyWindow(window);
+                        SDL_Quit();
                         initGame();
                         break;
                     }
