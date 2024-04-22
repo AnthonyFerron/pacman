@@ -107,7 +107,7 @@ void initGame() {
     playerRect.h = TILE_SIZE - 1;
 
     // Définir la vitesse et la direction du personnage
-    int speed = 1;
+    int speed = 10;
     int dx = 0, dy = 0;
     int last_dx = 0, last_dy = 0; // Ajouter ces lignes pour stocker la dernière direction valide
 

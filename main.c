@@ -29,7 +29,7 @@ SDL_Texture* loadTexture(const char* path, SDL_Renderer* renderer) {
     return texture;
 }
 
-int theMain(int argc, char* argv[]) {
+int theMain() {
     // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
@@ -52,7 +52,7 @@ int theMain(int argc, char* argv[]) {
     }
 
     // Load image
-    SDL_Texture* backgroundTexture = loadTexture("Acceuil.bmp", renderer);
+    SDL_Texture* backgroundTexture = loadTexture("./image/Acceuil.bmp", renderer);
     if (!backgroundTexture) {
         return 1;
     }
@@ -113,6 +113,11 @@ int theMain(int argc, char* argv[]) {
     SDL_DestroyWindow(window);
     SDL_Quit();
 
+    return 0;
+}
+
+int main(void) {
+    theMain();
     return 0;
 }
 
