@@ -71,8 +71,16 @@ void drawMap(SDL_Renderer *renderer)
     }
 }
 
+// Définir la direction et la distance pour les ghosts
+
 int ghost1Direction = 1; // 1 pour la droite, -1 pour la gauche
 int ghost1Distance = 0;  // Distance parcourue depuis le dernier changement de direction
+
+int ghost2Direction = 1; // 1 pour la droite, -1 pour la gauche
+int ghost2Distance = 0;  // Distance parcourue depuis le dernier changement de direction
+
+int ghost3Direction = 1; // 1 pour le bas, -1 pour le haut
+int ghost3Distance = 0;  // Distance parcourue depuis le dernier changement de direction
 
 void initGame()
 {
@@ -156,15 +164,15 @@ void initGame()
 
     // Set initial position of ghost2
     ghost2Rect.x = 100;
-    ghost2Rect.y = 100;
+    ghost2Rect.y = 50;
     ghost2Rect.w = ghost2Surface->w;
     ghost2Rect.h = ghost2Surface->h;
     ghost2Rect.w = TILE_SIZE - 1;
     ghost2Rect.h = TILE_SIZE - 1;
 
     // Set initial position of ghost3
-    ghost3Rect.x = 800;
-    ghost3Rect.y = 500;
+    ghost3Rect.x = 850;
+    ghost3Rect.y = 450;
     ghost3Rect.w = ghost3Surface->w;
     ghost3Rect.h = ghost3Surface->h;
     ghost3Rect.w = TILE_SIZE - 1;
@@ -255,6 +263,30 @@ void initGame()
             // Changer de direction et réinitialiser la distance parcourue
             ghost1Direction *= -1;
             ghost1Distance = 0;
+        }
+
+        // Mettre à jour la position de ghost2 (gauche-droite)
+        ghost2Rect.x += GHOST_SPEED * ghost2Direction;
+        ghost2Distance += GHOST_SPEED;
+
+        // Vérifier si ghost2 a parcouru la distance souhaitée
+        if (ghost2Distance >= 300) // Remplacer par la distance que vous voulez
+        {
+            // Changer de direction et réinitialiser la distance parcourue
+            ghost2Direction *= -1;
+            ghost2Distance = 0;
+        }
+
+        // Mettre à jour la position de ghost3 (haut-bas)
+        ghost3Rect.y += GHOST_SPEED * ghost3Direction;
+        ghost3Distance += GHOST_SPEED;
+
+        // Vérifier si ghost3 a parcouru la distance souhaitée
+        if (ghost3Distance >= 300) // Remplacer par la distance que vous voulez
+        {
+            // Changer de direction et réinitialiser la distance parcourue
+            ghost3Direction *= -1;
+            ghost3Distance = 0;
         }
 
         // Effacer le rendu
