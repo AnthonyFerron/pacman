@@ -7,9 +7,12 @@ SDL_Texture *playerTexture = NULL;
 SDL_Texture *ghost1Texture = NULL;
 SDL_Texture *ghost2Texture = NULL;
 SDL_Texture *ghost3Texture = NULL;
+SDL_Texture *ghost4Texture = NULL;
+
 SDL_Rect ghost1Rect;
 SDL_Rect ghost2Rect;
 SDL_Rect ghost3Rect;
+SDL_Rect ghost4Rect;
 SDL_Rect playerRect;
 
 // Prototypes de fonction
@@ -76,6 +79,9 @@ int ghost2Distance = 0;  // Distance parcourue depuis le dernier changement de d
 
 int ghost3Direction = 1; // 1 pour le bas, -1 pour le haut
 int ghost3Distance = 0;  // Distance parcourue depuis le dernier changement de direction
+
+int ghost4Direction = 1; // 1 pour le bas, -1 pour le haut
+int ghost4Distance = 0;  // Distance parcourue depuis le dernier changement de direction
 
 void initGame()
 {
@@ -151,6 +157,16 @@ void initGame()
     ghost3Texture = SDL_CreateTextureFromSurface(renderer, ghost3Surface);
     SDL_FreeSurface(ghost3Surface);
 
+    // Load ghost4 texture
+    SDL_Surface *ghost4Surface = SDL_LoadBMP("./sprites/ghost4.bmp");
+    if (ghost4Surface == NULL)
+    {
+        printf("Failed to load ghost4 image! SDL_Error: %s\n", SDL_GetError());
+        return;
+    }
+    ghost4Texture = SDL_CreateTextureFromSurface(renderer, ghost4Surface);
+    SDL_FreeSurface(ghost4Surface);
+
     // Set initial position of player
     playerRect.x = 650;
     playerRect.y = 350;
@@ -182,6 +198,14 @@ void initGame()
     ghost3Rect.h = ghost3Surface->h;
     ghost3Rect.w = TILE_SIZE - 1;
     ghost3Rect.h = TILE_SIZE - 1;
+
+    // Set initial position of ghost4
+    ghost4Rect.x = 150;
+    ghost4Rect.y = 150;
+    ghost4Rect.w = ghost4Surface->w;
+    ghost4Rect.h = ghost4Surface->h;
+    ghost4Rect.w = TILE_SIZE - 1;
+    ghost4Rect.h = TILE_SIZE - 1;
 
     // Définir la vitesse et la direction du personnage
     int speed = 10;
@@ -294,10 +318,23 @@ void initGame()
             ghost3Distance = 0;
         }
 
+        // Mettre à jour la position de ghost4 (haut-bas)
+        ghost4Rect.y += GHOST_SPEED * ghost4Direction;
+        ghost4Distance += GHOST_SPEED;
+
+        // Vérifier si ghost4 a parcouru la distance souhaitée
+        if (ghost4Distance >= 300) // Remplacer par la distance que vous voulez
+        {
+            // Changer de direction et réinitialiser la distance parcourue
+            ghost4Direction *= -1;
+            ghost4Distance = 0;
+        }
+
         // Vérifier la collision avec chaque fantôme
         if (SDL_HasIntersection(&playerRect, &ghost1Rect) ||
             SDL_HasIntersection(&playerRect, &ghost2Rect) ||
-            SDL_HasIntersection(&playerRect, &ghost3Rect))
+            SDL_HasIntersection(&playerRect, &ghost3Rect) ||
+            SDL_HasIntersection(&playerRect, &ghost4Rect))
         {
             // Si une collision est détectée, afficher "Game Over"
             gameOver(renderer);
@@ -316,6 +353,7 @@ void initGame()
         SDL_RenderCopy(renderer, ghost1Texture, NULL, &ghost1Rect);
         SDL_RenderCopy(renderer, ghost2Texture, NULL, &ghost2Rect);
         SDL_RenderCopy(renderer, ghost3Texture, NULL, &ghost3Rect);
+        SDL_RenderCopy(renderer, ghost4Texture, NULL, &ghost4Rect);
 
         // Mettre à jour le rendu
         SDL_RenderPresent(renderer);
@@ -327,6 +365,7 @@ void initGame()
     SDL_DestroyTexture(ghost1Texture);
     SDL_DestroyTexture(ghost2Texture);
     SDL_DestroyTexture(ghost3Texture);
+    SDL_DestroyTexture(ghost4Texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
