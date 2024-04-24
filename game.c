@@ -12,6 +12,9 @@ SDL_Rect ghost2Rect;
 SDL_Rect ghost3Rect;
 SDL_Rect playerRect;
 
+// Prototypes de fonction
+void gameOver(SDL_Renderer *renderer);
+void drawLetter(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y);
 // initialisation de la map en 24 par 15
 
 int map[MAP_HEIGHT][MAP_WIDTH] = {
@@ -291,6 +294,15 @@ void initGame()
             ghost3Distance = 0;
         }
 
+        // Vérifier la collision avec chaque fantôme
+        if (SDL_HasIntersection(&playerRect, &ghost1Rect) ||
+            SDL_HasIntersection(&playerRect, &ghost2Rect) ||
+            SDL_HasIntersection(&playerRect, &ghost3Rect))
+        {
+            // Si une collision est détectée, afficher "Game Over"
+            gameOver(renderer);
+        }
+
         // Effacer le rendu
         SDL_RenderClear(renderer);
 
@@ -318,4 +330,54 @@ void initGame()
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
+}
+
+void gameOver(SDL_Renderer *renderer)
+{
+    // Charger chaque lettre
+    SDL_Texture *letters[7];
+    const char *letterFiles[7] = {"./lettres/G.bmp", "./lettres/A.bmp", "./lettres/M.bmp", "./lettres/E.bmp",
+                                  "./lettres/O.bmp", "./lettres/V.bmp", "./lettres/R.bmp"};
+    for (int i = 0; i < 7; ++i)
+    {
+        SDL_Surface *letterSurface = SDL_LoadBMP(letterFiles[i]);
+        if (letterSurface == NULL)
+        {
+            printf("Failed to load letter image! SDL_Error: %s\n", SDL_GetError());
+            return;
+        }
+        letters[i] = SDL_CreateTextureFromSurface(renderer, letterSurface);
+        SDL_FreeSurface(letterSurface);
+    }
+
+    // Calculer la position initiale pour centrer "Game Over"
+    int startX = WINDOW_WIDTH / 2 - (7 * TILE_SIZE) / 2;
+    int startY = WINDOW_HEIGHT / 2 - TILE_SIZE / 2;
+
+    // Afficher chaque lettre une par une
+    for (int i = 0; i < 7; ++i)
+    {
+        drawLetter(renderer, letters[i], startX + i * TILE_SIZE, startY);
+        SDL_RenderPresent(renderer);
+        SDL_Delay(500); // Attendre 500 ms entre chaque lettre
+    }
+
+    // Attendre 2 secondes avant de continuer
+    SDL_Delay(2000);
+
+    // Libérer les textures
+    for (int i = 0; i < 7; ++i)
+    {
+        SDL_DestroyTexture(letters[i]);
+    }
+}
+
+void drawLetter(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y)
+{
+    SDL_Rect rect;
+    rect.x = x;
+    rect.y = y;
+    rect.w = TILE_SIZE;
+    rect.h = TILE_SIZE;
+    SDL_RenderCopy(renderer, texture, NULL, &rect);
 }
