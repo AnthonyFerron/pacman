@@ -51,22 +51,14 @@ void drawMap(SDL_Renderer *renderer)
     {
         for (int x = 0; x < MAP_WIDTH; ++x)
         {
-
             tileRect.x = x * TILE_SIZE;
             tileRect.y = y * TILE_SIZE;
 
-            if (map[y][x] == 1)
+            if (map[y][x] == 0)
             {
-                // Draw wall
-                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Black color
+                // Draw background image
+                SDL_RenderCopy(renderer, backgroundTexture, NULL, &tileRect);
             }
-            else
-            {
-                // Draw empty space
-                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White color
-            }
-
-            SDL_RenderFillRect(renderer, &tileRect);
         }
     }
 }
@@ -106,7 +98,17 @@ void initGame()
         printf("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
         return;
     }
-    // Load player texture
+
+    SDL_Surface *backgroundSurface = SDL_LoadBMP("./sprites/Maps_1.bmp");
+    if (backgroundSurface == NULL)
+    {
+        printf("Failed to load background image! SDL_Error: %s\n", SDL_GetError());
+        return;
+    }
+    backgroundTexture = SDL_CreateTextureFromSurface(renderer, backgroundSurface);
+    SDL_FreeSurface(backgroundSurface);
+
+    // load player texture
     SDL_Surface *playerSurface = SDL_LoadBMP("./sprites/draco.bmp");
     if (playerSurface == NULL)
     {
@@ -296,10 +298,9 @@ void initGame()
         // SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
         drawMap(renderer);
 
-        // Rendre la texture du joueur
+        // Rendre les textures
+        SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
         SDL_RenderCopy(renderer, playerTexture, NULL, &playerRect);
-
-        // Rendre les textures des fantômes
         SDL_RenderCopy(renderer, ghost1Texture, NULL, &ghost1Rect);
         SDL_RenderCopy(renderer, ghost2Texture, NULL, &ghost2Rect);
         SDL_RenderCopy(renderer, ghost3Texture, NULL, &ghost3Rect);
