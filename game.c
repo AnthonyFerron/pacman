@@ -335,10 +335,10 @@ void initGame()
 void gameOver(SDL_Renderer *renderer)
 {
     // Charger chaque lettre
-    SDL_Texture *letters[7];
-    const char *letterFiles[7] = {"./lettres/G.bmp", "./lettres/A.bmp", "./lettres/M.bmp", "./lettres/E.bmp",
-                                  "./lettres/O.bmp", "./lettres/V.bmp", "./lettres/R.bmp"};
-    for (int i = 0; i < 7; ++i)
+    SDL_Texture *letters[8];
+    const char *letterFiles[8] = {"./lettres/G.bmp", "./lettres/A.bmp", "./lettres/M.bmp", "./lettres/E.bmp",
+                                  "./lettres/O.bmp", "./lettres/V.bmp", "./lettres/E.bmp", "./lettres/R.bmp"};
+    for (int i = 0; i < 8; ++i)
     {
         SDL_Surface *letterSurface = SDL_LoadBMP(letterFiles[i]);
         if (letterSurface == NULL)
@@ -355,7 +355,7 @@ void gameOver(SDL_Renderer *renderer)
     int startY = WINDOW_HEIGHT / 2 - TILE_SIZE / 2;
 
     // Afficher chaque lettre une par une
-    for (int i = 0; i < 7; ++i)
+    for (int i = 0; i < 8; ++i)
     {
         drawLetter(renderer, letters[i], startX + i * TILE_SIZE, startY);
         SDL_RenderPresent(renderer);
@@ -366,7 +366,7 @@ void gameOver(SDL_Renderer *renderer)
     SDL_Delay(2000);
 
     // Libérer les textures
-    for (int i = 0; i < 7; ++i)
+    for (int i = 0; i < 8; ++i)
     {
         SDL_DestroyTexture(letters[i]);
     }
