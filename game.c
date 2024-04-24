@@ -1,5 +1,8 @@
 #include "pacman.h"
 
+const int DX[4] = {-1, 0, 1, 0};
+const int DY[4] = {0, -1, 0, 1};
+
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Texture *backgroundTexture = NULL;
@@ -38,6 +41,8 @@ int map[MAP_HEIGHT][MAP_WIDTH] = {
     {1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1},
     {1, 2, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 1, 0, 0, 0, 0, 2, 1},
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+
+    // Voir combien de pixel fait une case, c'est ca qui cause le décalage
 };
 
 int isCollision(int x, int y)
@@ -200,8 +205,8 @@ void initGame()
     ghost3Rect.h = TILE_SIZE - 1;
 
     // Set initial position of ghost4
-    ghost4Rect.x = 150;
-    ghost4Rect.y = 150;
+    ghost4Rect.x = 850;
+    ghost4Rect.y = 500;
     ghost4Rect.w = ghost4Surface->w;
     ghost4Rect.h = ghost4Surface->h;
     ghost4Rect.w = TILE_SIZE - 1;
@@ -318,18 +323,35 @@ void initGame()
             ghost3Distance = 0;
         }
 
-        // Mettre à jour la position de ghost4 (haut-bas)
-        ghost4Rect.y += GHOST_SPEED * ghost4Direction;
-        ghost4Distance += GHOST_SPEED;
-
-        // Vérifier si ghost4 a parcouru la distance souhaitée
-        if (ghost4Distance >= 300) // Remplacer par la distance que vous voulez
+        // Mettre à jour la position de ghost4
+        if (ghost4Direction < 2)
         {
-            // Changer de direction et réinitialiser la distance parcourue
-            ghost4Direction *= -1;
-            ghost4Distance = 0;
+            ghost4Rect.x += GHOST_SPEED * DX[ghost4Direction];
+        }
+        else
+        {
+            ghost4Rect.y += GHOST_SPEED * DY[ghost4Direction];
         }
 
+        // Vérifier si ghost4 est à un croisement
+        int tileX = ghost4Rect.x / TILE_SIZE;
+        int tileY = ghost4Rect.y / TILE_SIZE;
+        if (map[tileY][tileX] == 2)
+        {
+            // Choisir une direction valide au hasard
+            int newDirection;
+            do
+            {
+                newDirection = rand() % 4; // Choisir une direction au hasard
+                int newX = ghost4Rect.x + DX[newDirection] * GHOST_SPEED;
+                int newY = ghost4Rect.y + DY[newDirection] * GHOST_SPEED;
+                tileX = newX / TILE_SIZE;
+                tileY = newY / TILE_SIZE;
+            } while (map[tileY][tileX] == 1); // Continuer tant que la direction choisie n'est pas valide (0 ou 2)
+
+            // Mettre à jour la direction de ghost4
+            ghost4Direction = newDirection;
+        }
         // Vérifier la collision avec chaque fantôme
         if (SDL_HasIntersection(&playerRect, &ghost1Rect) ||
             SDL_HasIntersection(&playerRect, &ghost2Rect) ||
