@@ -57,7 +57,7 @@ void drawMap(SDL_Renderer* renderer) {
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
                 SDL_RenderFillRect(renderer, &tileRect);
 
-                if (map[y][x] == 0) {
+                if (map[y][x] != 2) {
                     // Render the texture for the pokeball
                     SDL_Rect textureRect;
                     textureRect.x = tileRect.x + (TILE_SIZE - 25) / 2;
@@ -92,15 +92,6 @@ void initGame() {
         return;
     }
 
-    // // Load background texture
-    // SDL_Surface* backgroundSurface = SDL_LoadBMP("Maps.bmp");
-    // if (backgroundSurface == NULL) {
-    //     printf("Failed to load background image! SDL_Error: %s\n", SDL_GetError());
-    //     return;
-    // }
-    // backgroundTexture = SDL_CreateTextureFromSurface(renderer, backgroundSurface);
-    // SDL_FreeSurface(backgroundSurface);
-
     // Load player texture
     SDL_Surface* playerSurface = SDL_LoadBMP("./sprites/draco.bmp");
     if (playerSurface == NULL) {
@@ -122,8 +113,6 @@ void initGame() {
     // Set initial position of player
     playerRect.x = 650;
     playerRect.y = 350;
-    playerRect.w = playerSurface->w;
-    playerRect.h = playerSurface->h;
     playerRect.w = TILE_SIZE - 1;
     playerRect.h = TILE_SIZE - 1;
 
@@ -139,7 +128,9 @@ void initGame() {
     // Boucle principale
     SDL_Event event;
     int quit = 0;
+
     while (!quit) {
+
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 quit = 1;
@@ -174,7 +165,8 @@ void initGame() {
         // Vérifier si le mouvement proposé ferait entrer player en collision avec un mur
         if (newX1 >= 0 && newX1 < MAP_WIDTH && newY1 >= 0 && newY1 < MAP_HEIGHT &&
             newX2 >= 0 && newX2 < MAP_WIDTH && newY2 >= 0 && newY2 < MAP_HEIGHT &&
-            map[newY1][newX1] == 0 && map[newY1][newX2] == 0 && map[newY2][newX1] == 0 && map[newY2][newX2] == 0) {
+            map[newY1][newX1] != 1 && map[newY1][newX2] != 1 && 
+            map[newY2][newX1] != 1 && map[newY2][newX2] != 1) {
             // If all the new positions are empty tiles (0), then move the player
             playerRect.x += dx;
             playerRect.y += dy;
@@ -182,17 +174,16 @@ void initGame() {
             last_dy = dy;
 
             // Update the map to show the player's trail
-            // int playerTileX = playerRect.x / TILE_SIZE;
-            // int playerTileY = playerRect.y / TILE_SIZE;
-            // if (playerTileX != currentTileX || playerTileY != currentTileY) {
-            //     // The player has moved to a new tile, so update the map and redraw
-            //     if (playerTileX >= 0 && playerTileX < MAP_WIDTH && playerTileY >= 0 && playerTileY < MAP_HEIGHT) {
-            //         map[playerTileY][playerTileX] = 2;
-            //     }
-            //     drawMap(renderer);
-            //     currentTileX = playerTileX;
-            //     currentTileY = playerTileY;
-            // }
+            int playerTileX = playerRect.x / TILE_SIZE;
+            int playerTileY = playerRect.y / TILE_SIZE;
+            if (playerTileX != currentTileX || playerTileY != currentTileY) {
+                // The player has moved to a new tile, so update the map and redraw
+                if (playerTileX >= 0 && playerTileX < MAP_WIDTH && playerTileY >= 0 && playerTileY < MAP_HEIGHT && map[playerTileY][playerTileX] != 2) {
+                    map[playerTileY][playerTileX] = 2;
+                }
+                currentTileX = playerTileX;
+                currentTileY = playerTileY;
+            }
         } else {
             // Calculate the proposed new positions for all corners of the hitbox using the last valid direction
             newX1 = (playerRect.x + last_dx) / TILE_SIZE;
@@ -203,7 +194,8 @@ void initGame() {
             // Check if the movement in the last valid direction would cause the player to collide with a wall
             if (newX1 >= 0 && newX1 < MAP_WIDTH && newY1 >= 0 && newY1 < MAP_HEIGHT &&
                 newX2 >= 0 && newX2 < MAP_WIDTH && newY2 >= 0 && newY2 < MAP_HEIGHT &&
-                map[newY1][newX1] == 0 && map[newY1][newX2] == 0 && map[newY2][newX1] == 0 && map[newY2][newX2] == 0) {
+                map[newY1][newX1] != 1 && map[newY1][newX2] != 1 && 
+                map[newY2][newX1] != 1 && map[newY2][newX2] != 1) {
                 // If all the new positions are empty tiles (0), then move the player
                 playerRect.x += last_dx;
                 playerRect.y += last_dy;
@@ -215,7 +207,6 @@ void initGame() {
         SDL_RenderClear(renderer);
 
         // Render the background texture
-        // SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
         drawMap(renderer);
 
         // Render the player texture
@@ -224,13 +215,5 @@ void initGame() {
         // Update the renderer
         SDL_RenderPresent(renderer);
     }
-
-    // Cleanup
-    // SDL_DestroyTexture(backgroundTexture);
-    SDL_DestroyTexture(ballTexture);
-    SDL_DestroyTexture(playerTexture);
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
 }
 
