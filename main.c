@@ -1,10 +1,6 @@
 #include <SDL2/SDL.h>
 #include "pacman.h"
 
-void initlead(){
-    printf("leaderbord");
-}
-
 void initRules(){
     printf("rules");
 }
@@ -87,11 +83,14 @@ int theMain() {
                         initGame();
                         break;
                     }
-                    if(434<x && 309<y && 814>x && 399>y){
-                        initlead();
+                    if(434<x && 399<y && 814>x && 489>y){
+                        SDL_DestroyRenderer(renderer);
+                        SDL_DestroyWindow(window);
+                        SDL_Quit();
+                        initScores();
                         break;
                     }
-                    if(434<x && 325<y && 814>x && 415>y)
+                    if(434<x && 505<y && 814>x && 595>y)
                         initRules();
                         break;
             }

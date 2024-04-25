@@ -1,9 +1,12 @@
 #include "pacman.h"
+#include <math.h>
+
 
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 SDL_Texture* backgroundTexture = NULL;
 SDL_Texture* playerTexture = NULL;
+SDL_Texture* ballTexture = NULL;
 SDL_Rect playerRect;
 
 //initialisation de la map en 24 par 15
@@ -28,7 +31,6 @@ int map[MAP_HEIGHT][MAP_WIDTH] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 };
 
-
 int isCollision(int x, int y) {
     int tileX = x / TILE_SIZE;
     int tileY = y / TILE_SIZE;
@@ -48,13 +50,23 @@ void drawMap(SDL_Renderer* renderer) {
 
             if (map[y][x] == 1) {
                 // Draw wall
-                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Black color
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                SDL_RenderFillRect(renderer, &tileRect); // Black color
             } else {
                 // Draw empty space
-                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White color
-            }
+                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                SDL_RenderFillRect(renderer, &tileRect);
 
-            SDL_RenderFillRect(renderer, &tileRect);
+                if (map[y][x] == 0) {
+                    // Render the texture for the pokeball
+                    SDL_Rect textureRect;
+                    textureRect.x = tileRect.x + (TILE_SIZE - 25) / 2;
+                    textureRect.y = tileRect.y + (TILE_SIZE - 25) / 2;
+                    textureRect.w = 25;
+                    textureRect.h = 25;
+                    SDL_RenderCopy(renderer, ballTexture, NULL, &textureRect);
+                }
+            }
         }
     }
 }
@@ -98,6 +110,15 @@ void initGame() {
     playerTexture = SDL_CreateTextureFromSurface(renderer, playerSurface);
     SDL_FreeSurface(playerSurface);
 
+    // Load ball texture
+    SDL_Surface* ballSurface = SDL_LoadBMP("./sprites/pokeball.bmp");
+    if (ballSurface == NULL) {
+        printf("Failed to load player image! SDL_Error: %s\n", SDL_GetError());
+        return;
+    }
+    ballTexture = SDL_CreateTextureFromSurface(renderer, ballSurface);
+    SDL_FreeSurface(ballSurface);
+
     // Set initial position of player
     playerRect.x = 650;
     playerRect.y = 350;
@@ -105,6 +126,10 @@ void initGame() {
     playerRect.h = playerSurface->h;
     playerRect.w = TILE_SIZE - 1;
     playerRect.h = TILE_SIZE - 1;
+
+    // Variables to store the player's current tile
+    int currentTileX = playerRect.x / TILE_SIZE;
+    int currentTileY = playerRect.y / TILE_SIZE;
 
     // Définir la vitesse et la direction du personnage
     int speed = 10;
@@ -147,29 +172,44 @@ void initGame() {
         int newY2 = (playerRect.y + dy + playerRect.h) / TILE_SIZE;
 
         // Vérifier si le mouvement proposé ferait entrer player en collision avec un mur
-        if (map[newY1][newX1] == 0 && map[newY1][newX2] == 0 && map[newY2][newX1] == 0 && map[newY2][newX2] == 0) {
-            // Si toutes les nouvelles positions sont des cases vides (0), alors déplacer player
+        if (newX1 >= 0 && newX1 < MAP_WIDTH && newY1 >= 0 && newY1 < MAP_HEIGHT &&
+            newX2 >= 0 && newX2 < MAP_WIDTH && newY2 >= 0 && newY2 < MAP_HEIGHT &&
+            map[newY1][newX1] == 0 && map[newY1][newX2] == 0 && map[newY2][newX1] == 0 && map[newY2][newX2] == 0) {
+            // If all the new positions are empty tiles (0), then move the player
             playerRect.x += dx;
             playerRect.y += dy;
-            last_dx = dx; // Mettre à jour la dernière direction valide
+            last_dx = dx; // Update the last valid direction
             last_dy = dy;
+
+            // Update the map to show the player's trail
+            // int playerTileX = playerRect.x / TILE_SIZE;
+            // int playerTileY = playerRect.y / TILE_SIZE;
+            // if (playerTileX != currentTileX || playerTileY != currentTileY) {
+            //     // The player has moved to a new tile, so update the map and redraw
+            //     if (playerTileX >= 0 && playerTileX < MAP_WIDTH && playerTileY >= 0 && playerTileY < MAP_HEIGHT) {
+            //         map[playerTileY][playerTileX] = 2;
+            //     }
+            //     drawMap(renderer);
+            //     currentTileX = playerTileX;
+            //     currentTileY = playerTileY;
+            // }
         } else {
-            // Calculer les nouvelles positions proposées pour tous les coins de la hitbox en utilisant la dernière direction valide
+            // Calculate the proposed new positions for all corners of the hitbox using the last valid direction
             newX1 = (playerRect.x + last_dx) / TILE_SIZE;
             newY1 = (playerRect.y + last_dy) / TILE_SIZE;
             newX2 = (playerRect.x + last_dx + playerRect.w) / TILE_SIZE;
             newY2 = (playerRect.y + last_dy + playerRect.h) / TILE_SIZE;
 
-            // Vérifier si le mouvement dans la dernière direction valide ferait entrer player en collision avec un mur
-            if (map[newY1][newX1] == 0 && map[newY1][newX2] == 0 && map[newY2][newX1] == 0 && map[newY2][newX2] == 0) {
-                // Si toutes les nouvelles positions sont des cases vides (0), alors déplacer player
+            // Check if the movement in the last valid direction would cause the player to collide with a wall
+            if (newX1 >= 0 && newX1 < MAP_WIDTH && newY1 >= 0 && newY1 < MAP_HEIGHT &&
+                newX2 >= 0 && newX2 < MAP_WIDTH && newY2 >= 0 && newY2 < MAP_HEIGHT &&
+                map[newY1][newX1] == 0 && map[newY1][newX2] == 0 && map[newY2][newX1] == 0 && map[newY2][newX2] == 0) {
+                // If all the new positions are empty tiles (0), then move the player
                 playerRect.x += last_dx;
                 playerRect.y += last_dy;
             }
-            // Si une collision se produit, ne pas déplacer player
+            // If a collision occurs, do not move the player
         }
-
-
 
         // Clear the renderer
         SDL_RenderClear(renderer);
@@ -186,9 +226,11 @@ void initGame() {
     }
 
     // Cleanup
-    SDL_DestroyTexture(backgroundTexture);
+    // SDL_DestroyTexture(backgroundTexture);
+    SDL_DestroyTexture(ballTexture);
     SDL_DestroyTexture(playerTexture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
+
