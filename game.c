@@ -230,24 +230,29 @@ void initGame()
             }
             else if (event.type == SDL_KEYDOWN)
             {
+                int proposedX = playerRect.x;
+                int proposedY = playerRect.y;
+
                 switch (event.key.keysym.sym)
                 {
                 case SDLK_UP:
-                    dx = 0;
-                    dy = -speed;
+                    proposedY -= speed;
                     break;
                 case SDLK_DOWN:
-                    dx = 0;
-                    dy = speed;
+                    proposedY += speed;
                     break;
                 case SDLK_LEFT:
-                    dx = -speed;
-                    dy = 0;
+                    proposedX -= speed;
                     break;
                 case SDLK_RIGHT:
-                    dx = speed;
-                    dy = 0;
+                    proposedX += speed;
                     break;
+                }
+
+                if (!isCollision(proposedX, proposedY))
+                {
+                    playerRect.x = proposedX;
+                    playerRect.y = proposedY;
                 }
             }
         }
@@ -286,7 +291,8 @@ void initGame()
         }
 
         // Mettre à jour la position du fantôme
-        const int GHOST_SPEED = 10;            // Vitesse du fantôme en pixels par frame
+        const int GHOST_SPEED = 10; // Vitesse du fantôme en pixels par frame
+        const int GHOST4_SPEED = 8;
         const int GHOST_TRAVEL_DISTANCE = 100; // Distance à parcourir avant de changer de direction
         ghost1Rect.x += GHOST_SPEED * ghost1Direction;
         ghost1Distance += GHOST_SPEED;
@@ -324,34 +330,79 @@ void initGame()
         }
 
         // Mettre à jour la position de ghost4
-        if (ghost4Direction < 2)
+        // if (ghost4Direction < 2)
+        // {
+        //     ghost4Rect.x += GHOST_SPEED * DX[ghost4Direction];
+        // }
+        // else
+        // {
+        //     ghost4Rect.y += GHOST_SPEED * DY[ghost4Direction];
+        // }
+
+        // Mettre à jour la position de ghost4 pour qu'il suive Pacman
+        int diffX = playerRect.x - ghost4Rect.x;
+        int diffY = playerRect.y - ghost4Rect.y;
+
+        if (abs(diffX) > abs(diffY))
         {
-            ghost4Rect.x += GHOST_SPEED * DX[ghost4Direction];
+            // Déplacer horizontalement
+            if (diffX > 0)
+            {
+                ghost4Rect.x += GHOST4_SPEED; // Déplacer vers la droite
+            }
+            else
+            {
+                ghost4Rect.x -= GHOST4_SPEED; // Déplacer vers la gauche
+            }
         }
         else
         {
-            ghost4Rect.y += GHOST_SPEED * DY[ghost4Direction];
+            // Déplacer verticalement
+            if (diffY > 0)
+            {
+                ghost4Rect.y += GHOST4_SPEED; // Déplacer vers le bas
+            }
+            else
+            {
+                ghost4Rect.y -= GHOST4_SPEED; // Déplacer vers le haut
+            }
+        }
+
+        // Vérifier les collisions avec les murs pour ghost4
+        int newGhost4X = ghost4Rect.x / TILE_SIZE;
+        int newGhost4Y = ghost4Rect.y / TILE_SIZE;
+        if (map[newGhost4Y][newGhost4X] == 1)
+        {
+            // Si le mouvement mène à une collision avec un mur, ne pas mettre à jour la position
+            if (abs(diffX) > abs(diffY))
+            {
+                ghost4Rect.x -= (diffX > 0 ? GHOST4_SPEED : -GHOST4_SPEED);
+            }
+            else
+            {
+                ghost4Rect.y -= (diffY > 0 ? GHOST4_SPEED : -GHOST4_SPEED);
+            }
         }
 
         // Vérifier si ghost4 est à un croisement
-        int tileX = ghost4Rect.x / TILE_SIZE;
-        int tileY = ghost4Rect.y / TILE_SIZE;
-        if (map[tileY][tileX] == 2)
-        {
-            // Choisir une direction valide au hasard
-            int newDirection;
-            do
-            {
-                newDirection = rand() % 4; // Choisir une direction au hasard
-                int newX = ghost4Rect.x + DX[newDirection] * GHOST_SPEED;
-                int newY = ghost4Rect.y + DY[newDirection] * GHOST_SPEED;
-                tileX = newX / TILE_SIZE;
-                tileY = newY / TILE_SIZE;
-            } while (map[tileY][tileX] == 1); // Continuer tant que la direction choisie n'est pas valide (0 ou 2)
-
-            // Mettre à jour la direction de ghost4
-            ghost4Direction = newDirection;
-        }
+        //    int tileX = ghost4Rect.x / TILE_SIZE;
+        //    int tileY = ghost4Rect.y / TILE_SIZE;
+        //    if (map[tileY][tileX] == 2)
+        //    {
+        //        // Choisir une direction valide au hasard
+        //        int newDirection;
+        //        do
+        //        {
+        //            newDirection = rand() % 4; // Choisir une direction au hasard
+        //            int newX = ghost4Rect.x + DX[newDirection] * GHOST_SPEED;
+        //            int newY = ghost4Rect.y + DY[newDirection] * GHOST_SPEED;
+        //            tileX = newX / TILE_SIZE;
+        //            tileY = newY / TILE_SIZE;
+        //        } while (map[tileY][tileX] == 1); // Continuer tant que la direction choisie n'est pas valide (0 ou 2)
+        //
+        //        // Mettre à jour la direction de ghost4
+        //        ghost4Direction = newDirection;
+        //    }
         // Vérifier la collision avec chaque fantôme
         if (SDL_HasIntersection(&playerRect, &ghost1Rect) ||
             SDL_HasIntersection(&playerRect, &ghost2Rect) ||
@@ -363,10 +414,10 @@ void initGame()
         }
 
         // Effacer le rendu
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Noir
         SDL_RenderClear(renderer);
 
         // Rendre la texture de fond
-        // SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
         drawMap(renderer);
 
         // Rendre les textures
@@ -379,6 +430,9 @@ void initGame()
 
         // Mettre à jour le rendu
         SDL_RenderPresent(renderer);
+
+        // Contrôler la vitesse de la boucle
+        SDL_Delay(16); // Attend environ 16 ms (60 FPS)
     }
 
     // Cleanup
