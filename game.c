@@ -21,7 +21,6 @@ SDL_Rect playerRect;
 // Prototypes de fonction
 void gameOver(SDL_Renderer *renderer);
 void drawLetter(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y);
-// initialisation de la map en 24 par 15
 
 int map[MAP_HEIGHT][MAP_WIDTH] = {
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -170,12 +169,15 @@ void initGame()
     SDL_FreeSurface(ghost4Surface);
 
     // Set initial position of player
-    playerRect.x = 650;
-    playerRect.y = 350;
-    playerRect.w = playerSurface->w;
-    playerRect.h = playerSurface->h;
-    playerRect.w = TILE_SIZE - 1;
-    playerRect.h = TILE_SIZE - 1;
+    // Définir les coordonnées d'apparition
+    int spawnX = 14;
+    int spawnY = 6;
+
+    // Initialiser la position et la taille du joueur
+    playerRect.x = spawnX * TILE_SIZE;
+    playerRect.y = spawnY * TILE_SIZE;
+    playerRect.w = TILE_SIZE;
+    playerRect.h = TILE_SIZE;
 
     // Set initial position of ghost1
     ghost1Rect.x = 450;
@@ -246,7 +248,12 @@ void initGame()
                     break;
                 }
 
-                if (!isCollision(proposedX, proposedY))
+                // Convertir les coordonnées en pixels en coordonnées de grille
+                int tileX = proposedX / TILE_SIZE;
+                int tileY = proposedY / TILE_SIZE;
+
+                // Vérifier si le mouvement proposé entraînerait une collision
+                if (!isCollision(tileX, tileY))
                 {
                     playerRect.x = proposedX;
                     playerRect.y = proposedY;
