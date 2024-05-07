@@ -43,10 +43,34 @@ int isCollision(int x, int y)
 }
 
 // Ajoutez ces variables pour stocker la direction des fantômes
-int ghost1_dy = SPEED;  // ghost1 se déplace de haut en bas
-int ghost2_dx = SPEED;  // ghost2 se déplace de gauche à droite
-int ghost3_dx = -SPEED; // ghost3 se déplace de droite à gauche
+int ghost1_dx = 0, ghost1_dy = SPEED;  // ghost1 se déplace de haut en bas
+int ghost2_dx = SPEED, ghost2_dy = 0;  // ghost2 se déplace de gauche à droite
+int ghost3_dx = -SPEED, ghost3_dy = 0; // ghost3 se déplace de droite à gauche
 
+// Ajoutez cette fonction pour changer la direction d'un fantôme de manière aléatoire
+void changeGhostDirection(int *dx, int *dy)
+{
+    int direction = rand() % 4;
+    switch (direction)
+    {
+    case 0: // Haut
+        *dx = 0;
+        *dy = -SPEED;
+        break;
+    case 1: // Bas
+        *dx = 0;
+        *dy = SPEED;
+        break;
+    case 2: // Gauche
+        *dx = -SPEED;
+        *dy = 0;
+        break;
+    case 3: // Droite
+        *dx = SPEED;
+        *dy = 0;
+        break;
+    }
+}
 void drawMap(SDL_Renderer *renderer)
 {
     SDL_Rect tileRect;
@@ -160,11 +184,10 @@ void initGame()
     ghost3Rect.w = TILE_SIZE - 1;
     ghost3Rect.h = TILE_SIZE - 1;
 
-    // Dans votre boucle principale, ajoutez ces lignes pour déplacer les fantômes
-    // Dans votre boucle principale, ajoutez ces lignes pour déplacer les fantômes
-    ghost1Rect.y += ghost1_dy;
-    ghost2Rect.x += ghost2_dx;
-    ghost3Rect.x += ghost3_dx;
+    // Changez la direction des fantômes de manière aléatoire à chaque tour
+    changeGhostDirection(&ghost1_dx, &ghost1_dy);
+    changeGhostDirection(&ghost2_dx, &ghost2_dy);
+    changeGhostDirection(&ghost3_dx, &ghost3_dy);
     // Set initial position of player
     playerRect.x = 650;
     playerRect.y = 350;
@@ -234,6 +257,17 @@ void initGame()
             playerRect.y += dy;
             last_dx = dx; // Update the last valid direction
             last_dy = dy;
+
+            // Mettre à jour la position du fantôme 1
+            ghost1Rect.x += ghost1_dx;
+            ghost1Rect.y += ghost1_dy;
+
+            // Vérifier si le fantôme 1 a heurté un mur
+            if (isCollision(ghost1Rect.x, ghost1Rect.y))
+            {
+                // Si le fantôme 1 a heurté un mur, changer sa direction
+                changeGhostDirection(&ghost1_dx, &ghost1_dy);
+            }
 
             // Update the map to show the player's trail
             int playerTileX = playerRect.x / TILE_SIZE;
