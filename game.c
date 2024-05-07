@@ -39,7 +39,7 @@ int isCollision(int x, int y) {
 
 void drawMap(SDL_Renderer* renderer) {
     // Load and render the background map image
-    SDL_Surface* mapSurface = SDL_LoadBMP("image/map.bmp");
+    SDL_Surface* mapSurface = SDL_LoadBMP("./image/map.bmp");
     if (mapSurface == NULL) {
         printf("Failed to load map image! SDL_Error: %s\n", SDL_GetError());
         return;
