@@ -1,6 +1,6 @@
 #include "pacman.h"
 
-
+// test
 int theMain() {
     // Initialisation de SDL
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
