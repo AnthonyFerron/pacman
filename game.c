@@ -262,10 +262,25 @@ void initGame()
             ghost1Rect.x += ghost1_dx;
             ghost1Rect.y += ghost1_dy;
 
-            // Vérifier si le fantôme 1 a heurté un mur
-            if (isCollision(ghost1Rect.x, ghost1Rect.y))
+            // Calculer les nouvelles positions proposées pour tous les coins de la hitbox du fantôme
+            int newGhost1X1 = (ghost1Rect.x + ghost1_dx) / TILE_SIZE;
+            int newGhost1Y1 = (ghost1Rect.y + ghost1_dy) / TILE_SIZE;
+            int newGhost1X2 = (ghost1Rect.x + ghost1_dx + ghost1Rect.w) / TILE_SIZE;
+            int newGhost1Y2 = (ghost1Rect.y + ghost1_dy + ghost1Rect.h) / TILE_SIZE;
+
+            // Vérifier si le mouvement proposé ferait entrer le fantôme 1 en collision avec un mur
+            if (newGhost1X1 >= 0 && newGhost1X1 < MAP_WIDTH && newGhost1Y1 >= 0 && newGhost1Y1 < MAP_HEIGHT &&
+                newGhost1X2 >= 0 && newGhost1X2 < MAP_WIDTH && newGhost1Y2 >= 0 && newGhost1Y2 < MAP_HEIGHT &&
+                map[newGhost1Y1][newGhost1X1] != 1 && map[newGhost1Y1][newGhost1X2] != 1 &&
+                map[newGhost1Y2][newGhost1X1] != 1 && map[newGhost1Y2][newGhost1X2] != 1)
             {
-                // Si le fantôme 1 a heurté un mur, changer sa direction
+                // Si toutes les nouvelles positions sont des tuiles vides (0), alors déplacer le fantôme
+                ghost1Rect.x += ghost1_dx;
+                ghost1Rect.y += ghost1_dy;
+            }
+            else
+            {
+                // Si une collision se produit, changer la direction du fantôme
                 changeGhostDirection(&ghost1_dx, &ghost1_dy);
             }
 
