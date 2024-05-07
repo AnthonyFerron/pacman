@@ -38,25 +38,27 @@ int isCollision(int x, int y) {
 }
 
 void drawMap(SDL_Renderer* renderer) {
+    // Load and render the background map image
+    SDL_Surface* mapSurface = SDL_LoadBMP("image/map.bmp");
+    if (mapSurface == NULL) {
+        printf("Failed to load map image! SDL_Error: %s\n", SDL_GetError());
+        return;
+    }
+    SDL_Texture* mapTexture = SDL_CreateTextureFromSurface(renderer, mapSurface);
+    SDL_FreeSurface(mapSurface);
+    SDL_RenderCopy(renderer, mapTexture, NULL, NULL);
+    SDL_DestroyTexture(mapTexture);
+
+    // Render the pokeballs on top of the background map
     SDL_Rect tileRect;
     tileRect.w = TILE_SIZE;
     tileRect.h = TILE_SIZE;
 
     for (int y = 0; y < MAP_HEIGHT; ++y) {
         for (int x = 0; x < MAP_WIDTH; ++x) {
-
             tileRect.x = x * TILE_SIZE;
             tileRect.y = y * TILE_SIZE;
-
-            if (map[y][x] == 1) {
-                // Draw wall
-                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-                SDL_RenderFillRect(renderer, &tileRect); // Black color
-            } else {
-                // Draw empty space
-                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-                SDL_RenderFillRect(renderer, &tileRect);
-
+            if (map[y][x] != 1){
                 if (map[y][x] != 2) {
                     // Render the texture for the pokeball
                     SDL_Rect textureRect;
@@ -67,6 +69,8 @@ void drawMap(SDL_Renderer* renderer) {
                     SDL_RenderCopy(renderer, ballTexture, NULL, &textureRect);
                 }
             }
+
+            
         }
     }
 }
