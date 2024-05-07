@@ -1,44 +1,38 @@
 #include "pacman.h"
-
-const int DX[4] = {-1, 0, 1, 0};
-const int DY[4] = {0, -1, 0, 1};
+#include <math.h>
+#define SPEED 2
 
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Texture *backgroundTexture = NULL;
 SDL_Texture *playerTexture = NULL;
+SDL_Texture *ballTexture = NULL;
 SDL_Texture *ghost1Texture = NULL;
 SDL_Texture *ghost2Texture = NULL;
 SDL_Texture *ghost3Texture = NULL;
-SDL_Texture *ghost4Texture = NULL;
-
-SDL_Rect ghost1Rect;
-SDL_Rect ghost2Rect;
-SDL_Rect ghost3Rect;
-SDL_Rect ghost4Rect;
+SDL_Rect ghost1Rect, ghost2Rect, ghost3Rect;
 SDL_Rect playerRect;
 
-// Prototypes de fonction
-void gameOver(SDL_Renderer *renderer);
-void drawLetter(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y);
+// initialisation de la map en 24 par 15
 
 int map[MAP_HEIGHT][MAP_WIDTH] = {
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0},
-    {0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1},
-    {1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1},
-    {0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0},
-    {1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1},
-    {0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0},
-    {0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0},
-    {0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0},
-    {0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0},
-    {0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
-
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1},
+    {1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1},
+    {1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1},
+    {0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0},
+    {1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1},
+    {1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1},
+    {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1},
+    {1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1},
+    {1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1},
+    {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1},
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 };
 
 int isCollision(int x, int y)
@@ -47,6 +41,11 @@ int isCollision(int x, int y)
     int tileY = y / TILE_SIZE;
     return map[tileY][tileX] == 1;
 }
+
+// Ajoutez ces variables pour stocker la direction des fantômes
+int ghost1_dy = SPEED;  // ghost1 se déplace de haut en bas
+int ghost2_dx = SPEED;  // ghost2 se déplace de gauche à droite
+int ghost3_dx = -SPEED; // ghost3 se déplace de droite à gauche
 
 void drawMap(SDL_Renderer *renderer)
 {
@@ -58,31 +57,36 @@ void drawMap(SDL_Renderer *renderer)
     {
         for (int x = 0; x < MAP_WIDTH; ++x)
         {
+
             tileRect.x = x * TILE_SIZE;
             tileRect.y = y * TILE_SIZE;
 
-            if (map[y][x] == 0)
+            if (map[y][x] == 1)
             {
-                // Draw background image
-                SDL_RenderCopy(renderer, backgroundTexture, NULL, &tileRect);
+                // Draw wall
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                SDL_RenderFillRect(renderer, &tileRect); // Black color
+            }
+            else
+            {
+                // Draw empty space
+                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                SDL_RenderFillRect(renderer, &tileRect);
+
+                if (map[y][x] != 2)
+                {
+                    // Render the texture for the pokeball
+                    SDL_Rect textureRect;
+                    textureRect.x = tileRect.x + (TILE_SIZE - 25) / 2;
+                    textureRect.y = tileRect.y + (TILE_SIZE - 25) / 2;
+                    textureRect.w = 25;
+                    textureRect.h = 25;
+                    SDL_RenderCopy(renderer, ballTexture, NULL, &textureRect);
+                }
             }
         }
     }
 }
-
-// Définir la direction et la distance pour les ghosts
-
-int ghost1Direction = 1; // 1 pour la droite, -1 pour la gauche
-int ghost1Distance = 0;  // Distance parcourue depuis le dernier changement de direction
-
-int ghost2Direction = 1; // 1 pour la droite, -1 pour la gauche
-int ghost2Distance = 0;  // Distance parcourue depuis le dernier changement de direction
-
-int ghost3Direction = 1; // 1 pour le bas, -1 pour le haut
-int ghost3Distance = 0;  // Distance parcourue depuis le dernier changement de direction
-
-int ghost4Direction = 1; // 1 pour le bas, -1 pour le haut
-int ghost4Distance = 0;  // Distance parcourue depuis le dernier changement de direction
 
 void initGame()
 {
@@ -109,16 +113,7 @@ void initGame()
         return;
     }
 
-    SDL_Surface *backgroundSurface = SDL_LoadBMP("./sprites/Maps_1.bmp");
-    if (backgroundSurface == NULL)
-    {
-        printf("Failed to load background image! SDL_Error: %s\n", SDL_GetError());
-        return;
-    }
-    backgroundTexture = SDL_CreateTextureFromSurface(renderer, backgroundSurface);
-    SDL_FreeSurface(backgroundSurface);
-
-    // load player texture
+    // Load player texture
     SDL_Surface *playerSurface = SDL_LoadBMP("./sprites/draco.bmp");
     if (playerSurface == NULL)
     {
@@ -128,88 +123,57 @@ void initGame()
     playerTexture = SDL_CreateTextureFromSurface(renderer, playerSurface);
     SDL_FreeSurface(playerSurface);
 
-    // Load ghost1 texture
-    SDL_Surface *ghost1Surface = SDL_LoadBMP("./sprites/ghost1.bmp");
-    if (ghost1Surface == NULL)
+    // Load ball texture
+    SDL_Surface *ballSurface = SDL_LoadBMP("./sprites/pokeball.bmp");
+    if (ballSurface == NULL)
     {
-        printf("Failed to load ghost1 image! SDL_Error: %s\n", SDL_GetError());
+        printf("Failed to load player image! SDL_Error: %s\n", SDL_GetError());
         return;
     }
+    ballTexture = SDL_CreateTextureFromSurface(renderer, ballSurface);
+    SDL_FreeSurface(ballSurface);
+
+    // Dans votre fonction initGame(), ajoutez ces lignes pour charger les textures des fantômes
+    SDL_Surface *ghost1Surface = SDL_LoadBMP("./sprites/ghost1.bmp");
     ghost1Texture = SDL_CreateTextureFromSurface(renderer, ghost1Surface);
     SDL_FreeSurface(ghost1Surface);
 
-    // Load ghost2 texture
     SDL_Surface *ghost2Surface = SDL_LoadBMP("./sprites/ghost2.bmp");
-    if (ghost2Surface == NULL)
-    {
-        printf("Failed to load ghost2 image! SDL_Error: %s\n", SDL_GetError());
-        return;
-    }
     ghost2Texture = SDL_CreateTextureFromSurface(renderer, ghost2Surface);
     SDL_FreeSurface(ghost2Surface);
 
-    // Load ghost3 texture
     SDL_Surface *ghost3Surface = SDL_LoadBMP("./sprites/ghost3.bmp");
-    if (ghost3Surface == NULL)
-    {
-        printf("Failed to load ghost3 image! SDL_Error: %s\n", SDL_GetError());
-        return;
-    }
     ghost3Texture = SDL_CreateTextureFromSurface(renderer, ghost3Surface);
     SDL_FreeSurface(ghost3Surface);
 
-    // Load ghost4 texture
-    SDL_Surface *ghost4Surface = SDL_LoadBMP("./sprites/ghost4.bmp");
-    if (ghost4Surface == NULL)
-    {
-        printf("Failed to load ghost4 image! SDL_Error: %s\n", SDL_GetError());
-        return;
-    }
-    ghost4Texture = SDL_CreateTextureFromSurface(renderer, ghost4Surface);
-    SDL_FreeSurface(ghost4Surface);
-
-    // Set initial position of player
-    // Définir les coordonnées d'apparition
-    int spawnX = 14;
-    int spawnY = 6;
-
-    // Initialiser la position et la taille du joueur
-    playerRect.x = spawnX * TILE_SIZE;
-    playerRect.y = spawnY * TILE_SIZE;
-    playerRect.w = TILE_SIZE;
-    playerRect.h = TILE_SIZE;
-
-    // Set initial position of ghost1
-    ghost1Rect.x = 450;
-    ghost1Rect.y = 500;
-    ghost1Rect.w = ghost1Surface->w;
-    ghost1Rect.h = ghost1Surface->h;
+    // Définissez les positions initiales des fantômes
+    ghost1Rect.x = 300;
+    ghost1Rect.y = 300;
     ghost1Rect.w = TILE_SIZE - 1;
     ghost1Rect.h = TILE_SIZE - 1;
-
-    // Set initial position of ghost2
-    ghost2Rect.x = 100;
-    ghost2Rect.y = 50;
-    ghost2Rect.w = ghost2Surface->w;
-    ghost2Rect.h = ghost2Surface->h;
+    ghost2Rect.x = 400;
+    ghost2Rect.y = 400;
     ghost2Rect.w = TILE_SIZE - 1;
     ghost2Rect.h = TILE_SIZE - 1;
-
-    // Set initial position of ghost3
-    ghost3Rect.x = 850;
-    ghost3Rect.y = 450;
-    ghost3Rect.w = ghost3Surface->w;
-    ghost3Rect.h = ghost3Surface->h;
+    ghost3Rect.x = 500;
+    ghost3Rect.y = 500;
     ghost3Rect.w = TILE_SIZE - 1;
     ghost3Rect.h = TILE_SIZE - 1;
 
-    // Set initial position of ghost4
-    ghost4Rect.x = 850;
-    ghost4Rect.y = 500;
-    ghost4Rect.w = ghost4Surface->w;
-    ghost4Rect.h = ghost4Surface->h;
-    ghost4Rect.w = TILE_SIZE - 1;
-    ghost4Rect.h = TILE_SIZE - 1;
+    // Dans votre boucle principale, ajoutez ces lignes pour déplacer les fantômes
+    // Dans votre boucle principale, ajoutez ces lignes pour déplacer les fantômes
+    ghost1Rect.y += ghost1_dy;
+    ghost2Rect.x += ghost2_dx;
+    ghost3Rect.x += ghost3_dx;
+    // Set initial position of player
+    playerRect.x = 650;
+    playerRect.y = 350;
+    playerRect.w = TILE_SIZE - 1;
+    playerRect.h = TILE_SIZE - 1;
+
+    // Variables to store the player's current tile
+    int currentTileX = playerRect.x / TILE_SIZE;
+    int currentTileY = playerRect.y / TILE_SIZE;
 
     // Définir la vitesse et la direction du personnage
     int speed = 10;
@@ -219,8 +183,10 @@ void initGame()
     // Boucle principale
     SDL_Event event;
     int quit = 0;
+
     while (!quit)
     {
+
         while (SDL_PollEvent(&event))
         {
             if (event.type == SDL_QUIT)
@@ -229,34 +195,24 @@ void initGame()
             }
             else if (event.type == SDL_KEYDOWN)
             {
-                int proposedX = playerRect.x;
-                int proposedY = playerRect.y;
-
                 switch (event.key.keysym.sym)
                 {
                 case SDLK_UP:
-                    proposedY -= speed;
+                    dx = 0;
+                    dy = -speed;
                     break;
                 case SDLK_DOWN:
-                    proposedY += speed;
+                    dx = 0;
+                    dy = speed;
                     break;
                 case SDLK_LEFT:
-                    proposedX -= speed;
+                    dx = -speed;
+                    dy = 0;
                     break;
                 case SDLK_RIGHT:
-                    proposedX += speed;
+                    dx = speed;
+                    dy = 0;
                     break;
-                }
-
-                // Convertir les coordonnées en pixels en coordonnées de grille
-                int tileX = proposedX / TILE_SIZE;
-                int tileY = proposedY / TILE_SIZE;
-
-                // Vérifier si le mouvement proposé entraînerait une collision
-                if (!isCollision(tileX, tileY))
-                {
-                    playerRect.x = proposedX;
-                    playerRect.y = proposedY;
                 }
             }
         }
@@ -268,235 +224,66 @@ void initGame()
         int newY2 = (playerRect.y + dy + playerRect.h) / TILE_SIZE;
 
         // Vérifier si le mouvement proposé ferait entrer player en collision avec un mur
-        if (map[newY1][newX1] == 0 && map[newY1][newX2] == 0 && map[newY2][newX1] == 0 && map[newY2][newX2] == 0)
+        if (newX1 >= 0 && newX1 < MAP_WIDTH && newY1 >= 0 && newY1 < MAP_HEIGHT &&
+            newX2 >= 0 && newX2 < MAP_WIDTH && newY2 >= 0 && newY2 < MAP_HEIGHT &&
+            map[newY1][newX1] != 1 && map[newY1][newX2] != 1 &&
+            map[newY2][newX1] != 1 && map[newY2][newX2] != 1)
         {
-            // Si toutes les nouvelles positions sont des cases vides (0), alors déplacer player
+            // If all the new positions are empty tiles (0), then move the player
             playerRect.x += dx;
             playerRect.y += dy;
-            last_dx = dx; // Mettre à jour la dernière direction valide
+            last_dx = dx; // Update the last valid direction
             last_dy = dy;
+
+            // Update the map to show the player's trail
+            int playerTileX = playerRect.x / TILE_SIZE;
+            int playerTileY = playerRect.y / TILE_SIZE;
+            if (playerTileX != currentTileX || playerTileY != currentTileY)
+            {
+                // The player has moved to a new tile, so update the map and redraw
+                if (playerTileX >= 0 && playerTileX < MAP_WIDTH && playerTileY >= 0 && playerTileY < MAP_HEIGHT && map[playerTileY][playerTileX] != 2)
+                {
+                    map[playerTileY][playerTileX] = 2;
+                }
+                currentTileX = playerTileX;
+                currentTileY = playerTileY;
+            }
         }
         else
         {
-            // Calculer les nouvelles positions proposées pour tous les coins de la hitbox en utilisant la dernière direction valide
+            // Calculate the proposed new positions for all corners of the hitbox using the last valid direction
             newX1 = (playerRect.x + last_dx) / TILE_SIZE;
             newY1 = (playerRect.y + last_dy) / TILE_SIZE;
             newX2 = (playerRect.x + last_dx + playerRect.w) / TILE_SIZE;
             newY2 = (playerRect.y + last_dy + playerRect.h) / TILE_SIZE;
 
-            // Vérifier si le mouvement dans la dernière direction valide ferait entrer player en collision avec un mur
-            if (map[newY1][newX1] == 0 && map[newY1][newX2] == 0 && map[newY2][newX1] == 0 && map[newY2][newX2] == 0)
+            // Check if the movement in the last valid direction would cause the player to collide with a wall
+            if (newX1 >= 0 && newX1 < MAP_WIDTH && newY1 >= 0 && newY1 < MAP_HEIGHT &&
+                newX2 >= 0 && newX2 < MAP_WIDTH && newY2 >= 0 && newY2 < MAP_HEIGHT &&
+                map[newY1][newX1] != 1 && map[newY1][newX2] != 1 &&
+                map[newY2][newX1] != 1 && map[newY2][newX2] != 1)
             {
-                // Si toutes les nouvelles positions sont des cases vides (0), alors déplacer player
+                // If all the new positions are empty tiles (0), then move the player
                 playerRect.x += last_dx;
                 playerRect.y += last_dy;
             }
-            // Si une collision se produit, ne pas déplacer player
+            // If a collision occurs, do not move the player
         }
 
-        // Mettre à jour la position du fantôme
-        const int GHOST_SPEED = 10; // Vitesse du fantôme en pixels par frame
-        const int GHOST4_SPEED = 8;
-        const int GHOST_TRAVEL_DISTANCE = 100; // Distance à parcourir avant de changer de direction
-        ghost1Rect.x += GHOST_SPEED * ghost1Direction;
-        ghost1Distance += GHOST_SPEED;
-
-        // Vérifier si le fantôme a parcouru la distance souhaitée
-        if (ghost1Distance >= GHOST_TRAVEL_DISTANCE)
-        {
-            // Changer de direction et réinitialiser la distance parcourue
-            ghost1Direction *= -1;
-            ghost1Distance = 0;
-        }
-
-        // Mettre à jour la position de ghost2 (gauche-droite)
-        ghost2Rect.x += GHOST_SPEED * ghost2Direction;
-        ghost2Distance += GHOST_SPEED;
-
-        // Vérifier si ghost2 a parcouru la distance souhaitée
-        if (ghost2Distance >= 300) // Remplacer par la distance que vous voulez
-        {
-            // Changer de direction et réinitialiser la distance parcourue
-            ghost2Direction *= -1;
-            ghost2Distance = 0;
-        }
-
-        // Mettre à jour la position de ghost3 (haut-bas)
-        ghost3Rect.y += GHOST_SPEED * ghost3Direction;
-        ghost3Distance += GHOST_SPEED;
-
-        // Vérifier si ghost3 a parcouru la distance souhaitée
-        if (ghost3Distance >= 300) // Remplacer par la distance que vous voulez
-        {
-            // Changer de direction et réinitialiser la distance parcourue
-            ghost3Direction *= -1;
-            ghost3Distance = 0;
-        }
-
-        // Mettre à jour la position de ghost4
-        // if (ghost4Direction < 2)
-        // {
-        //     ghost4Rect.x += GHOST_SPEED * DX[ghost4Direction];
-        // }
-        // else
-        // {
-        //     ghost4Rect.y += GHOST_SPEED * DY[ghost4Direction];
-        // }
-
-        // Mettre à jour la position de ghost4 pour qu'il suive Pacman
-        int diffX = playerRect.x - ghost4Rect.x;
-        int diffY = playerRect.y - ghost4Rect.y;
-
-        if (abs(diffX) > abs(diffY))
-        {
-            // Déplacer horizontalement
-            if (diffX > 0)
-            {
-                ghost4Rect.x += GHOST4_SPEED; // Déplacer vers la droite
-            }
-            else
-            {
-                ghost4Rect.x -= GHOST4_SPEED; // Déplacer vers la gauche
-            }
-        }
-        else
-        {
-            // Déplacer verticalement
-            if (diffY > 0)
-            {
-                ghost4Rect.y += GHOST4_SPEED; // Déplacer vers le bas
-            }
-            else
-            {
-                ghost4Rect.y -= GHOST4_SPEED; // Déplacer vers le haut
-            }
-        }
-
-        // Vérifier les collisions avec les murs pour ghost4
-        int newGhost4X = ghost4Rect.x / TILE_SIZE;
-        int newGhost4Y = ghost4Rect.y / TILE_SIZE;
-        if (map[newGhost4Y][newGhost4X] == 1)
-        {
-            // Si le mouvement mène à une collision avec un mur, ne pas mettre à jour la position
-            if (abs(diffX) > abs(diffY))
-            {
-                ghost4Rect.x -= (diffX > 0 ? GHOST4_SPEED : -GHOST4_SPEED);
-            }
-            else
-            {
-                ghost4Rect.y -= (diffY > 0 ? GHOST4_SPEED : -GHOST4_SPEED);
-            }
-        }
-
-        // Vérifier si ghost4 est à un croisement
-        //    int tileX = ghost4Rect.x / TILE_SIZE;
-        //    int tileY = ghost4Rect.y / TILE_SIZE;
-        //    if (map[tileY][tileX] == 2)
-        //    {
-        //        // Choisir une direction valide au hasard
-        //        int newDirection;
-        //        do
-        //        {
-        //            newDirection = rand() % 4; // Choisir une direction au hasard
-        //            int newX = ghost4Rect.x + DX[newDirection] * GHOST_SPEED;
-        //            int newY = ghost4Rect.y + DY[newDirection] * GHOST_SPEED;
-        //            tileX = newX / TILE_SIZE;
-        //            tileY = newY / TILE_SIZE;
-        //        } while (map[tileY][tileX] == 1); // Continuer tant que la direction choisie n'est pas valide (0 ou 2)
-        //
-        //        // Mettre à jour la direction de ghost4
-        //        ghost4Direction = newDirection;
-        //    }
-        // Vérifier la collision avec chaque fantôme
-        if (SDL_HasIntersection(&playerRect, &ghost1Rect) ||
-            SDL_HasIntersection(&playerRect, &ghost2Rect) ||
-            SDL_HasIntersection(&playerRect, &ghost3Rect) ||
-            SDL_HasIntersection(&playerRect, &ghost4Rect))
-        {
-            // Si une collision est détectée, afficher "Game Over"
-            gameOver(renderer);
-        }
-
-        // Effacer le rendu
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Noir
+        // Clear the renderer
         SDL_RenderClear(renderer);
 
-        // Rendre la texture de fond
+        // Render the background texture
         drawMap(renderer);
 
-        // Rendre les textures
-        SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
+        // Render the player texture
         SDL_RenderCopy(renderer, playerTexture, NULL, &playerRect);
+        // Ajoutez ces lignes pour rendre les textures des fantômes
         SDL_RenderCopy(renderer, ghost1Texture, NULL, &ghost1Rect);
         SDL_RenderCopy(renderer, ghost2Texture, NULL, &ghost2Rect);
         SDL_RenderCopy(renderer, ghost3Texture, NULL, &ghost3Rect);
-        SDL_RenderCopy(renderer, ghost4Texture, NULL, &ghost4Rect);
 
-        // Mettre à jour le rendu
+        // Update the renderer
         SDL_RenderPresent(renderer);
-
-        // Contrôler la vitesse de la boucle
-        SDL_Delay(16); // Attend environ 16 ms (60 FPS)
     }
-
-    // Cleanup
-    SDL_DestroyTexture(backgroundTexture);
-    SDL_DestroyTexture(playerTexture);
-    SDL_DestroyTexture(ghost1Texture);
-    SDL_DestroyTexture(ghost2Texture);
-    SDL_DestroyTexture(ghost3Texture);
-    SDL_DestroyTexture(ghost4Texture);
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-}
-
-void gameOver(SDL_Renderer *renderer)
-{
-    // Charger chaque lettre
-    SDL_Texture *letters[8];
-    const char *letterFiles[8] = {"./lettres/G.bmp", "./lettres/A.bmp", "./lettres/M.bmp", "./lettres/E.bmp",
-                                  "./lettres/O.bmp", "./lettres/V.bmp", "./lettres/E.bmp", "./lettres/R.bmp"};
-    for (int i = 0; i < 8; ++i)
-    {
-        SDL_Surface *letterSurface = SDL_LoadBMP(letterFiles[i]);
-        if (letterSurface == NULL)
-        {
-            printf("Failed to load letter image! SDL_Error: %s\n", SDL_GetError());
-            return;
-        }
-        letters[i] = SDL_CreateTextureFromSurface(renderer, letterSurface);
-        SDL_FreeSurface(letterSurface);
-    }
-
-    // Calculer la position initiale pour centrer "Game Over"
-    int startX = WINDOW_WIDTH / 2 - (7 * TILE_SIZE) / 2;
-    int startY = WINDOW_HEIGHT / 2 - TILE_SIZE / 2;
-
-    // Afficher chaque lettre une par une
-    for (int i = 0; i < 8; ++i)
-    {
-        drawLetter(renderer, letters[i], startX + i * TILE_SIZE, startY);
-        SDL_RenderPresent(renderer);
-        SDL_Delay(500); // Attendre 500 ms entre chaque lettre
-    }
-
-    // Attendre 2 secondes avant de continuer
-    SDL_Delay(2000);
-
-    // Libérer les textures
-    for (int i = 0; i < 8; ++i)
-    {
-        SDL_DestroyTexture(letters[i]);
-    }
-}
-
-void drawLetter(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y)
-{
-    SDL_Rect rect;
-    rect.x = x;
-    rect.y = y;
-    rect.w = TILE_SIZE;
-    rect.h = TILE_SIZE;
-    SDL_RenderCopy(renderer, texture, NULL, &rect);
 }

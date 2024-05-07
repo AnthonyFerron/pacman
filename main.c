@@ -1,68 +1,113 @@
+#include <SDL2/SDL.h>
 #include "pacman.h"
 
-// test
+void initRules(){
+    printf("rules");
+}
+
+SDL_Texture* loadTexture(const char* path, SDL_Renderer* renderer) {
+    // Load image at specified path
+    SDL_Surface* loadedSurface = SDL_LoadBMP(path);
+    if (!loadedSurface) {
+        printf("Unable to load image %s! SDL Error: %s\n", path, SDL_GetError());
+        return NULL;
+    }
+
+    // Create texture from surface pixels
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, loadedSurface);
+    if (!texture) {
+        printf("Unable to create texture from %s! SDL Error: %s\n", path, SDL_GetError());
+    }
+
+    // Get rid of old loaded surface
+    SDL_FreeSurface(loadedSurface);
+
+    return texture;
+}
+
 int theMain() {
-    // Initialisation de SDL
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-        printf("Erreur lors de l'initialisation de SDL : %s\n", SDL_GetError());
+    // Initialize SDL
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
         return 1;
     }
 
-    // Création de la fenêtre
-    SDL_Window* window = SDL_CreateWindow("Ma fenêtre", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
-    if (window == NULL) {
-        printf("Erreur lors de la création de la fenêtre : %s\n", SDL_GetError());
-        SDL_Quit();
-        return 1;
-    }
-
-    // Création du rendu
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderClear(renderer);
-    if (renderer == NULL) {
-        printf("Erreur lors de la création du rendu : %s\n", SDL_GetError());
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return 1;
-    }
+    // Create window
+    SDL_Window* window = SDL_CreateWindow("Image Background", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1250, 750, SDL_WINDOW_SHOWN);
     
-    // Rectangle bleu
-    SDL_Rect blueRect = { 100, 100, 200, 200 };
-    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-    SDL_RenderFillRect(renderer, &blueRect);
+    if (!window) {
+        printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
+        return 1;
+    }
 
-    // Rectangle rouge
-    SDL_Rect redRect = { 950, 100, 200, 200 };
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    SDL_RenderFillRect(renderer, &redRect);
+    // Create renderer for window
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    if (!renderer) {
+        printf("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
+        return 1;
+    }
 
-    // Affichage du rendu
-    SDL_RenderPresent(renderer);
+    // Load image
+    SDL_Texture* backgroundTexture = loadTexture("./image/Acceuil.bmp", renderer);
+    if (!backgroundTexture) {
+        return 1;
+    }
+    SDL_Rect button1 = {80, 650, 380, 90};
+    SDL_Rect button2 = {310, 650, 380, 90};
+    SDL_Rect button3 = {540, 650, 380, 90};
+    // Main loop flag
+    int quit = false;
+    SDL_Event e;
 
-    // Boucle principale
-    int quit = 0;
-    SDL_Event event;
+    // Main loop
     while (!quit) {
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) {
-                quit = 1;
-            } else if (event.type == SDL_MOUSEBUTTONDOWN) {
-                int mouseX = event.button.x;
-                int mouseY = event.button.y;
-                if (mouseX >= redRect.x && mouseX <= redRect.x + redRect.w && mouseY >= redRect.y && mouseY <= redRect.y + redRect.h) {
-                    quit = 1;
-                } else if (mouseX >= blueRect.x && mouseX <= blueRect.x + blueRect.w && mouseY >= blueRect.y && mouseY <= blueRect.y + blueRect.h) {
-                    SDL_DestroyRenderer(renderer);
-                    SDL_DestroyWindow(window);
-                    SDL_Quit();
-                    initGame();
-                }
+        // Handle events on queue
+        while (SDL_PollEvent(&e)) {
+            switch(e.type){
+                case SDL_WINDOWEVENT:
+                    if (e.window.event == SDL_WINDOWEVENT_CLOSE)
+                        quit = true;
+                        break;
+                case SDL_MOUSEBUTTONDOWN: // Click de souris relâché
+                    int x = 0;
+                    int y = 0;
+                    SDL_GetMouseState(&x, &y);
+                    if(1192<x && 690<y && 1235>x && 740>y){
+                        quit = true;
+                        break;
+                    }
+                    if(434<x && 293<y && 814>x && 383>y){
+                        SDL_DestroyRenderer(renderer);
+                        SDL_DestroyWindow(window);
+                        SDL_Quit();
+                        initGame();
+                        break;
+                    }
+                    if(434<x && 399<y && 814>x && 489>y){
+                        SDL_DestroyRenderer(renderer);
+                        SDL_DestroyWindow(window);
+                        SDL_Quit();
+                        initScores();
+                        break;
+                    }
+                    if(434<x && 505<y && 814>x && 595>y)
+                        initRules();
+                        break;
             }
         }
+
+        // Clear screen
+        SDL_RenderClear(renderer);
+
+        // Render background texture
+        SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
+
+        // Update screen
+        SDL_RenderPresent(renderer);
     }
 
-    // Libération des ressources
+    // Free resources and close SDL
+    SDL_DestroyTexture(backgroundTexture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
@@ -74,3 +119,11 @@ int main(void) {
     theMain();
     return 0;
 }
+
+// SDL_Rect img = {0, 0, 1250, 750};
+
+// SDL_Rect button4 = {1000, 650, 180, 60};
+// SDL_Event events;
+
+
+

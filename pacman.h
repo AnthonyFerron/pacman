@@ -15,6 +15,7 @@
 
 int theMain();
 #include "game.c"
-
+#include "afficherScores.c"
+#include "saveScores.c"
 
 #endif
