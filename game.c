@@ -1,13 +1,15 @@
 #include "pacman.h"
 #include <math.h>
 
-
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 SDL_Texture* backgroundTexture = NULL;
-SDL_Texture* playerTexture = NULL;
+SDL_Texture* playerTextures[4] = {NULL, NULL, NULL, NULL}; // Textures pour les 4 directions
 SDL_Texture* ballTexture = NULL;
 SDL_Rect playerRect;
+
+// Directions indices
+enum { UP, DOWN, LEFT, RIGHT };
 
 //initialisation de la map en 24 par 15
 
@@ -30,6 +32,8 @@ int map[MAP_HEIGHT][MAP_WIDTH] = {
     {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1},
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 };
+
+int score = 0; // Variable globale pour le score
 
 int isCollision(int x, int y) {
     int tileX = x / TILE_SIZE;
@@ -67,12 +71,24 @@ void drawMap(SDL_Renderer* renderer) {
                     textureRect.w = 25;
                     textureRect.h = 25;
                     SDL_RenderCopy(renderer, ballTexture, NULL, &textureRect);
+
+                    // Increase the score when a pokeball is picked up
+                    score += 10;
                 }
             }
-
-            
         }
     }
+
+    // Afficher le score à l'écran
+    SDL_Color textColor = {255, 255, 255}; // Couleur du texte : blanc
+    char scoreText[50]; // Variable pour stocker le texte du score
+    sprintf(scoreText, "Score: %d", score); // Formater le texte avec le score actuel
+    SDL_Surface* textSurface = TTF_RenderText_Solid(font, scoreText, textColor); // Créer une surface de texte à partir du texte formatté
+    SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface); // Créer une texture à partir de la surface de texte
+    SDL_Rect textRect = {10, 10, textSurface->w, textSurface->h}; // Position et taille du texte
+    SDL_RenderCopy(renderer, textTexture, NULL, &textRect); // Afficher le texte sur le rendu
+    SDL_FreeSurface(textSurface); // Libérer la surface de texte
+    SDL_DestroyTexture(textTexture); // Libérer la texture de texte
 }
 
 void initGame() {
@@ -96,19 +112,26 @@ void initGame() {
         return;
     }
 
-    // Load player texture
-    SDL_Surface* playerSurface = SDL_LoadBMP("./sprites/draco.bmp");
-    if (playerSurface == NULL) {
-        printf("Failed to load player image! SDL_Error: %s\n", SDL_GetError());
-        return;
+    // Load player textures for different directions
+    SDL_Surface* playerSurfaces[4];
+    playerSurfaces[UP] = SDL_LoadBMP("./sprites/draco_up.bmp");
+    playerSurfaces[DOWN] = SDL_LoadBMP("./sprites/draco_down.bmp");
+    playerSurfaces[LEFT] = SDL_LoadBMP("./sprites/draco_left.bmp");
+    playerSurfaces[RIGHT] = SDL_LoadBMP("./sprites/draco_right.bmp");
+
+    for (int i = 0; i < 4; ++i) {
+        if (playerSurfaces[i] == NULL) {
+            printf("Failed to load player image! SDL_Error: %s\n", SDL_GetError());
+            return;
+        }
+        playerTextures[i] = SDL_CreateTextureFromSurface(renderer, playerSurfaces[i]);
+        SDL_FreeSurface(playerSurfaces[i]);
     }
-    playerTexture = SDL_CreateTextureFromSurface(renderer, playerSurface);
-    SDL_FreeSurface(playerSurface);
 
     // Load ball texture
     SDL_Surface* ballSurface = SDL_LoadBMP("./sprites/pokeball.bmp");
     if (ballSurface == NULL) {
-        printf("Failed to load player image! SDL_Error: %s\n", SDL_GetError());
+        printf("Failed to load ball image! SDL_Error: %s\n", SDL_GetError());
         return;
     }
     ballTexture = SDL_CreateTextureFromSurface(renderer, ballSurface);
@@ -128,6 +151,7 @@ void initGame() {
     int speed = 10;
     int dx = 0, dy = 0;
     int last_dx = 0, last_dy = 0; // Ajouter ces lignes pour stocker la dernière direction valide
+    int currentDirection = RIGHT; // Initial direction
 
     // Boucle principale
     SDL_Event event;
@@ -143,18 +167,22 @@ void initGame() {
                     case SDLK_UP:
                         dx = 0;
                         dy = -speed;
+                        currentDirection = UP;
                         break;
                     case SDLK_DOWN:
                         dx = 0;
                         dy = speed;
+                        currentDirection = DOWN;
                         break;
                     case SDLK_LEFT:
                         dx = -speed;
                         dy = 0;
+                        currentDirection = LEFT;
                         break;
                     case SDLK_RIGHT:
                         dx = speed;
                         dy = 0;
+                        currentDirection = RIGHT;
                         break;
                 }
             }
@@ -178,15 +206,31 @@ void initGame() {
             last_dy = dy;
 
             // Update the map to show the player's trail
-            int playerTileX = playerRect.x / TILE_SIZE;
-            int playerTileY = playerRect.y / TILE_SIZE;
-            if (playerTileX != currentTileX || playerTileY != currentTileY) {
-                // The player has moved to a new tile, so update the map and redraw
-                if (playerTileX >= 0 && playerTileX < MAP_WIDTH && playerTileY >= 0 && playerTileY < MAP_HEIGHT && map[playerTileY][playerTileX] != 2) {
-                    map[playerTileY][playerTileX] = 2;
+            int playerTileX1 = playerRect.x / TILE_SIZE;
+            int playerTileY1 = playerRect.y / TILE_SIZE;
+            int playerTileX2 = (playerRect.x + playerRect.w) / TILE_SIZE;
+            int playerTileY2 = (playerRect.y + playerRect.h) / TILE_SIZE;
+
+            // Vérifier si un des coins du joueur est entré dans une nouvelle case
+            if (playerTileX1 != currentTileX || playerTileY1 != currentTileY ||
+                playerTileX2 != currentTileX || playerTileY2 != currentTileY) {
+                currentTileX = playerTileX1;
+                currentTileY = playerTileY1;
+
+                if (currentTileX >= 0 && currentTileX < MAP_WIDTH && 
+                    currentTileY >= 0 && currentTileY < MAP_HEIGHT && 
+                    map[currentTileY][currentTileX] != 2) {
+                    map[currentTileY][currentTileX] = 2;
                 }
-                currentTileX = playerTileX;
-                currentTileY = playerTileY;
+
+                currentTileX = playerTileX2;
+                currentTileY = playerTileY2;
+
+                if (currentTileX >= 0 && currentTileX < MAP_WIDTH && 
+                    currentTileY >= 0 && currentTileY < MAP_HEIGHT && 
+                    map[currentTileY][currentTileX] != 2) {
+                    map[currentTileY][currentTileX] = 2;
+                }
             }
         } else {
             // Calculate the proposed new positions for all corners of the hitbox using the last valid direction
@@ -203,8 +247,35 @@ void initGame() {
                 // If all the new positions are empty tiles (0), then move the player
                 playerRect.x += last_dx;
                 playerRect.y += last_dy;
+
+                // Update the map to show the player's trail
+                int playerTileX1 = playerRect.x / TILE_SIZE;
+                int playerTileY1 = playerRect.y / TILE_SIZE;
+                int playerTileX2 = (playerRect.x + playerRect.w) / TILE_SIZE;
+                int playerTileY2 = (playerRect.y + playerRect.h) / TILE_SIZE;
+
+                // Vérifier si un des coins du joueur est entré dans une nouvelle case
+                if (playerTileX1 != currentTileX || playerTileY1 != currentTileY ||
+                    playerTileX2 != currentTileX || playerTileY2 != currentTileY) {
+                    currentTileX = playerTileX1;
+                    currentTileY = playerTileY1;
+
+                    if (currentTileX >= 0 && currentTileX < MAP_WIDTH && 
+                        currentTileY >= 0 && currentTileY < MAP_HEIGHT && 
+                        map[currentTileY][currentTileX] != 2) {
+                        map[currentTileY][currentTileX] = 2;
+                    }
+
+                    currentTileX = playerTileX2;
+                    currentTileY = playerTileY2;
+
+                    if (currentTileX >= 0 && currentTileX < MAP_WIDTH && 
+                        currentTileY >= 0 && currentTileY < MAP_HEIGHT && 
+                        map[currentTileY][currentTileX] != 2) {
+                        map[currentTileY][currentTileX] = 2;
+                    }
+                }
             }
-            // If a collision occurs, do not move the player
         }
 
         // Clear the renderer
@@ -213,11 +284,31 @@ void initGame() {
         // Render the background texture
         drawMap(renderer);
 
-        // Render the player texture
-        SDL_RenderCopy(renderer, playerTexture, NULL, &playerRect);
+        // Render the player texture based on the current direction
+        SDL_RenderCopy(renderer, playerTextures[currentDirection], NULL, &playerRect);
 
         // Update the renderer
         SDL_RenderPresent(renderer);
     }
-}
 
+    // Clean up resources before exiting
+    for (int i = 0; i < 4; ++i) {
+        if (playerTextures[i] != NULL) {
+            SDL_DestroyTexture(playerTextures[i]);
+            playerTextures[i] = NULL;
+        }
+    }
+    if (ballTexture != NULL) {
+        SDL_DestroyTexture(ballTexture);
+        ballTexture = NULL;
+    }
+    if (renderer != NULL) {
+        SDL_DestroyRenderer(renderer);
+        renderer = NULL;
+    }
+    if (window != NULL) {
+        SDL_DestroyWindow(window);
+        window = NULL;
+    }
+    SDL_Quit();
+}
