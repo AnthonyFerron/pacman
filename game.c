@@ -79,36 +79,30 @@ void drawMap(SDL_Renderer *renderer)
     tileRect.w = TILE_SIZE;
     tileRect.h = TILE_SIZE;
 
+    // Render the background texture
+    SDL_Rect backgroundRect;
+    backgroundRect.x = 0;
+    backgroundRect.y = 0;
+    backgroundRect.w = WINDOW_WIDTH;
+    backgroundRect.h = WINDOW_HEIGHT;
+    SDL_RenderCopy(renderer, backgroundTexture, NULL, &backgroundRect);
+
     for (int y = 0; y < MAP_HEIGHT; ++y)
     {
         for (int x = 0; x < MAP_WIDTH; ++x)
         {
-
             tileRect.x = x * TILE_SIZE;
             tileRect.y = y * TILE_SIZE;
 
-            if (map[y][x] == 1)
+            if (map[y][x] == 0)
             {
-                // Draw wall
-                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-                SDL_RenderFillRect(renderer, &tileRect); // Black color
-            }
-            else
-            {
-                // Draw empty space
-                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-                SDL_RenderFillRect(renderer, &tileRect);
-
-                if (map[y][x] != 2)
-                {
-                    // Render the texture for the pokeball
-                    SDL_Rect textureRect;
-                    textureRect.x = tileRect.x + (TILE_SIZE - 25) / 2;
-                    textureRect.y = tileRect.y + (TILE_SIZE - 25) / 2;
-                    textureRect.w = 25;
-                    textureRect.h = 25;
-                    SDL_RenderCopy(renderer, ballTexture, NULL, &textureRect);
-                }
+                // Render the texture for the pokeball
+                SDL_Rect textureRect;
+                textureRect.x = tileRect.x + (TILE_SIZE - 25) / 2;
+                textureRect.y = tileRect.y + (TILE_SIZE - 25) / 2;
+                textureRect.w = 25;
+                textureRect.h = 25;
+                SDL_RenderCopy(renderer, ballTexture, NULL, &textureRect);
             }
         }
     }
@@ -138,6 +132,17 @@ void initGame()
         printf("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
         return;
     }
+
+    // Load map BG
+
+    SDL_Surface *backgroundSurface = SDL_LoadBMP("./image/Map1.bmp");
+    if (backgroundSurface == NULL)
+    {
+        printf("Failed to load map image! SDL_Error: %s\n", SDL_GetError());
+        return;
+    }
+    backgroundTexture = SDL_CreateTextureFromSurface(renderer, backgroundSurface);
+    SDL_FreeSurface(backgroundSurface);
 
     // Load player texture
     SDL_Surface *playerSurface = SDL_LoadBMP("./sprites/draco.bmp");
@@ -398,6 +403,14 @@ void initGame()
 
         // Clear the renderer
         SDL_RenderClear(renderer);
+
+        // Render the background texture
+        SDL_Rect backgroundRect;
+        backgroundRect.x = 0;
+        backgroundRect.y = 0;
+        backgroundRect.w = WINDOW_WIDTH;
+        backgroundRect.h = WINDOW_HEIGHT;
+        SDL_RenderCopy(renderer, backgroundTexture, NULL, &backgroundRect);
 
         // Render the background texture
         drawMap(renderer);
