@@ -10,7 +10,8 @@ SDL_Texture *ballTexture = NULL;
 SDL_Texture *ghost1Texture = NULL;
 SDL_Texture *ghost2Texture = NULL;
 SDL_Texture *ghost3Texture = NULL;
-SDL_Rect ghost1Rect, ghost2Rect, ghost3Rect;
+SDL_Texture *ghost4Texture = NULL;
+SDL_Rect ghost1Rect, ghost2Rect, ghost3Rect, ghost4Rect;
 SDL_Rect playerRect;
 
 // initialisation de la map en 24 par 15
@@ -43,12 +44,10 @@ int isCollision(int x, int y)
 }
 
 // Ajoutez ces variables pour stocker la direction des fantômes
-int ghost1_dx = 0, ghost1_dy = SPEED;  // ghost1 se déplace de haut en bas
-int ghost2_dx = 0, ghost2_dy = SPEED;  // ghost1 se déplace de haut en bas
-int ghost3_dx = 0, ghost3_dy = SPEED;  // ghost1 se déplace de haut en bas
-
-// int ghost2_dx = SPEED, ghost2_dy = 0;  // ghost2 se déplace de gauche à droite
-// int ghost3_dx = -SPEED, ghost3_dy = 0; // ghost3 se déplace de droite à gauche
+int ghost1_dx = 0, ghost1_dy = SPEED;
+int ghost2_dx = 0, ghost2_dy = SPEED;
+int ghost3_dx = 0, ghost3_dy = SPEED;
+int ghost4_dx = 0, ghost4_dy = SPEED;
 
 // Ajoutez cette fonction pour changer la direction d'un fantôme de manière aléatoire
 void changeGhostDirection(int *dx, int *dy)
@@ -173,6 +172,10 @@ void initGame()
     ghost3Texture = SDL_CreateTextureFromSurface(renderer, ghost3Surface);
     SDL_FreeSurface(ghost3Surface);
 
+    SDL_Surface *ghost4Surface = SDL_LoadBMP("./sprites/ghost4.bmp");
+    ghost4Texture = SDL_CreateTextureFromSurface(renderer, ghost4Surface);
+    SDL_FreeSurface(ghost4Surface);
+
     // Définissez les positions initiales des fantômes
     ghost1Rect.x = 300;
     ghost1Rect.y = 300;
@@ -186,11 +189,17 @@ void initGame()
     ghost3Rect.y = 500;
     ghost3Rect.w = TILE_SIZE - 1;
     ghost3Rect.h = TILE_SIZE - 1;
+    ghost4Rect.x = 500;
+    ghost4Rect.y = 500;
+    ghost4Rect.w = TILE_SIZE - 1;
+    ghost4Rect.h = TILE_SIZE - 1;
 
     // Changez la direction des fantômes de manière aléatoire à chaque tour
     changeGhostDirection(&ghost1_dx, &ghost1_dy);
     changeGhostDirection(&ghost2_dx, &ghost2_dy);
     changeGhostDirection(&ghost3_dx, &ghost3_dy);
+    changeGhostDirection(&ghost4_dx, &ghost4_dy);
+
     // Set initial position of player
     playerRect.x = 650;
     playerRect.y = 350;
@@ -268,6 +277,8 @@ void initGame()
             ghost2Rect.y += ghost2_dy;
             ghost3Rect.x += ghost3_dx;
             ghost3Rect.y += ghost3_dy;
+            ghost4Rect.x += ghost4_dx;
+            ghost4Rect.y += ghost4_dy;
 
             // Calculer les nouvelles positions proposées pour tous les coins de la hitbox du fantôme
             int newGhost1X1 = (ghost1Rect.x + ghost1_dx) / TILE_SIZE;
@@ -282,6 +293,10 @@ void initGame()
             int newGhost3Y1 = (ghost3Rect.y + ghost3_dy) / TILE_SIZE;
             int newGhost3X2 = (ghost3Rect.x + ghost3_dx + ghost3Rect.w) / TILE_SIZE;
             int newGhost3Y2 = (ghost3Rect.y + ghost3_dy + ghost3Rect.h) / TILE_SIZE;
+            int newGhost4X1 = (ghost4Rect.x + ghost4_dx) / TILE_SIZE;
+            int newGhost4Y1 = (ghost4Rect.y + ghost4_dy) / TILE_SIZE;
+            int newGhost4X2 = (ghost4Rect.x + ghost4_dx + ghost4Rect.w) / TILE_SIZE;
+            int newGhost4Y2 = (ghost4Rect.y + ghost4_dy + ghost4Rect.h) / TILE_SIZE;
 
             // Vérifier si le mouvement proposé ferait entrer le fantôme 1 en collision avec un mur
             if (newGhost1X1 >= 0 && newGhost1X1 < MAP_WIDTH && newGhost1Y1 >= 0 && newGhost1Y1 < MAP_HEIGHT &&
@@ -299,7 +314,7 @@ void initGame()
                 changeGhostDirection(&ghost1_dx, &ghost1_dy);
             }
 
-             // Vérifier si le mouvement proposé ferait entrer le fantôme 2 en collision avec un mur
+            // Vérifier si le mouvement proposé ferait entrer le fantôme 2 en collision avec un mur
             if (newGhost2X1 >= 0 && newGhost2X1 < MAP_WIDTH && newGhost2Y1 >= 0 && newGhost2Y1 < MAP_HEIGHT &&
                 newGhost2X2 >= 0 && newGhost2X2 < MAP_WIDTH && newGhost2Y2 >= 0 && newGhost2Y2 < MAP_HEIGHT &&
                 map[newGhost2Y1][newGhost2X1] != 1 && map[newGhost2Y1][newGhost2X2] != 1 &&
@@ -315,7 +330,7 @@ void initGame()
                 changeGhostDirection(&ghost2_dx, &ghost2_dy);
             }
 
-             // Vérifier si le mouvement proposé ferait entrer le fantôme 3 en collision avec un mur
+            // Vérifier si le mouvement proposé ferait entrer le fantôme 3 en collision avec un mur
             if (newGhost3X1 >= 0 && newGhost3X1 < MAP_WIDTH && newGhost3Y1 >= 0 && newGhost3Y1 < MAP_HEIGHT &&
                 newGhost3X2 >= 0 && newGhost3X2 < MAP_WIDTH && newGhost3Y2 >= 0 && newGhost3Y2 < MAP_HEIGHT &&
                 map[newGhost3Y1][newGhost3X1] != 1 && map[newGhost3Y1][newGhost3X2] != 1 &&
@@ -329,6 +344,21 @@ void initGame()
             {
                 // Si une collision se produit, changer la direction du fantôme
                 changeGhostDirection(&ghost3_dx, &ghost3_dy);
+            }
+            // Vérifier si le mouvement proposé ferait entrer le fantôme 4 en collision avec un mur
+            if (newGhost4X1 >= 0 && newGhost4X1 < MAP_WIDTH && newGhost4Y1 >= 0 && newGhost4Y1 < MAP_HEIGHT &&
+                newGhost4X2 >= 0 && newGhost4X2 < MAP_WIDTH && newGhost4Y2 >= 0 && newGhost4Y2 < MAP_HEIGHT &&
+                map[newGhost4Y1][newGhost4X1] != 1 && map[newGhost4Y1][newGhost4X2] != 1 &&
+                map[newGhost4Y2][newGhost4X1] != 1 && map[newGhost4Y2][newGhost4X2] != 1)
+            {
+                // Si toutes les nouvelles positions sont des tuiles vides (0), alors déplacer le fantôme
+                ghost4Rect.x += ghost4_dx;
+                ghost4Rect.y += ghost4_dy;
+            }
+            else
+            {
+                // Si une collision se produit, changer la direction du fantôme
+                changeGhostDirection(&ghost4_dx, &ghost4_dy);
             }
 
             // Update the map to show the player's trail
@@ -378,6 +408,7 @@ void initGame()
         SDL_RenderCopy(renderer, ghost1Texture, NULL, &ghost1Rect);
         SDL_RenderCopy(renderer, ghost2Texture, NULL, &ghost2Rect);
         SDL_RenderCopy(renderer, ghost3Texture, NULL, &ghost3Rect);
+        SDL_RenderCopy(renderer, ghost4Texture, NULL, &ghost4Rect);
 
         // Update the renderer
         SDL_RenderPresent(renderer);
