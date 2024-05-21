@@ -44,8 +44,11 @@ int isCollision(int x, int y)
 
 // Ajoutez ces variables pour stocker la direction des fantômes
 int ghost1_dx = 0, ghost1_dy = SPEED;  // ghost1 se déplace de haut en bas
-int ghost2_dx = SPEED, ghost2_dy = 0;  // ghost2 se déplace de gauche à droite
-int ghost3_dx = -SPEED, ghost3_dy = 0; // ghost3 se déplace de droite à gauche
+int ghost2_dx = 0, ghost2_dy = SPEED;  // ghost1 se déplace de haut en bas
+int ghost3_dx = 0, ghost3_dy = SPEED;  // ghost1 se déplace de haut en bas
+
+// int ghost2_dx = SPEED, ghost2_dy = 0;  // ghost2 se déplace de gauche à droite
+// int ghost3_dx = -SPEED, ghost3_dy = 0; // ghost3 se déplace de droite à gauche
 
 // Ajoutez cette fonction pour changer la direction d'un fantôme de manière aléatoire
 void changeGhostDirection(int *dx, int *dy)
@@ -175,11 +178,11 @@ void initGame()
     ghost1Rect.y = 300;
     ghost1Rect.w = TILE_SIZE - 1;
     ghost1Rect.h = TILE_SIZE - 1;
-    ghost2Rect.x = 400;
-    ghost2Rect.y = 400;
+    ghost2Rect.x = 950;
+    ghost2Rect.y = 200;
     ghost2Rect.w = TILE_SIZE - 1;
     ghost2Rect.h = TILE_SIZE - 1;
-    ghost3Rect.x = 500;
+    ghost3Rect.x = 950;
     ghost3Rect.y = 500;
     ghost3Rect.w = TILE_SIZE - 1;
     ghost3Rect.h = TILE_SIZE - 1;
@@ -261,12 +264,24 @@ void initGame()
             // Mettre à jour la position du fantôme 1
             ghost1Rect.x += ghost1_dx;
             ghost1Rect.y += ghost1_dy;
+            ghost2Rect.x += ghost2_dx;
+            ghost2Rect.y += ghost2_dy;
+            ghost3Rect.x += ghost3_dx;
+            ghost3Rect.y += ghost3_dy;
 
             // Calculer les nouvelles positions proposées pour tous les coins de la hitbox du fantôme
             int newGhost1X1 = (ghost1Rect.x + ghost1_dx) / TILE_SIZE;
             int newGhost1Y1 = (ghost1Rect.y + ghost1_dy) / TILE_SIZE;
             int newGhost1X2 = (ghost1Rect.x + ghost1_dx + ghost1Rect.w) / TILE_SIZE;
             int newGhost1Y2 = (ghost1Rect.y + ghost1_dy + ghost1Rect.h) / TILE_SIZE;
+            int newGhost2X1 = (ghost2Rect.x + ghost2_dx) / TILE_SIZE;
+            int newGhost2Y1 = (ghost2Rect.y + ghost2_dy) / TILE_SIZE;
+            int newGhost2X2 = (ghost2Rect.x + ghost2_dx + ghost2Rect.w) / TILE_SIZE;
+            int newGhost2Y2 = (ghost2Rect.y + ghost2_dy + ghost2Rect.h) / TILE_SIZE;
+            int newGhost3X1 = (ghost3Rect.x + ghost3_dx) / TILE_SIZE;
+            int newGhost3Y1 = (ghost3Rect.y + ghost3_dy) / TILE_SIZE;
+            int newGhost3X2 = (ghost3Rect.x + ghost3_dx + ghost3Rect.w) / TILE_SIZE;
+            int newGhost3Y2 = (ghost3Rect.y + ghost3_dy + ghost3Rect.h) / TILE_SIZE;
 
             // Vérifier si le mouvement proposé ferait entrer le fantôme 1 en collision avec un mur
             if (newGhost1X1 >= 0 && newGhost1X1 < MAP_WIDTH && newGhost1Y1 >= 0 && newGhost1Y1 < MAP_HEIGHT &&
@@ -282,6 +297,38 @@ void initGame()
             {
                 // Si une collision se produit, changer la direction du fantôme
                 changeGhostDirection(&ghost1_dx, &ghost1_dy);
+            }
+
+             // Vérifier si le mouvement proposé ferait entrer le fantôme 2 en collision avec un mur
+            if (newGhost2X1 >= 0 && newGhost2X1 < MAP_WIDTH && newGhost2Y1 >= 0 && newGhost2Y1 < MAP_HEIGHT &&
+                newGhost2X2 >= 0 && newGhost2X2 < MAP_WIDTH && newGhost2Y2 >= 0 && newGhost2Y2 < MAP_HEIGHT &&
+                map[newGhost2Y1][newGhost2X1] != 1 && map[newGhost2Y1][newGhost2X2] != 1 &&
+                map[newGhost2Y2][newGhost2X1] != 1 && map[newGhost2Y2][newGhost2X2] != 1)
+            {
+                // Si toutes les nouvelles positions sont des tuiles vides (0), alors déplacer le fantôme
+                ghost2Rect.x += ghost2_dx;
+                ghost2Rect.y += ghost2_dy;
+            }
+            else
+            {
+                // Si une collision se produit, changer la direction du fantôme
+                changeGhostDirection(&ghost2_dx, &ghost2_dy);
+            }
+
+             // Vérifier si le mouvement proposé ferait entrer le fantôme 3 en collision avec un mur
+            if (newGhost3X1 >= 0 && newGhost3X1 < MAP_WIDTH && newGhost3Y1 >= 0 && newGhost3Y1 < MAP_HEIGHT &&
+                newGhost3X2 >= 0 && newGhost3X2 < MAP_WIDTH && newGhost3Y2 >= 0 && newGhost3Y2 < MAP_HEIGHT &&
+                map[newGhost3Y1][newGhost3X1] != 1 && map[newGhost3Y1][newGhost3X2] != 1 &&
+                map[newGhost3Y2][newGhost3X1] != 1 && map[newGhost3Y2][newGhost3X2] != 1)
+            {
+                // Si toutes les nouvelles positions sont des tuiles vides (0), alors déplacer le fantôme
+                ghost3Rect.x += ghost3_dx;
+                ghost3Rect.y += ghost3_dy;
+            }
+            else
+            {
+                // Si une collision se produit, changer la direction du fantôme
+                changeGhostDirection(&ghost3_dx, &ghost3_dy);
             }
 
             // Update the map to show the player's trail
