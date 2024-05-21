@@ -1,7 +1,4 @@
-#include "SDL.h"
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h>
+#include "pacman.h"
 
 void initScores(void)
 {

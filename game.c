@@ -33,8 +33,6 @@ int map[MAP_HEIGHT][MAP_WIDTH] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 };
 
-int score = 0; // Variable globale pour le score
-
 int isCollision(int x, int y) {
     int tileX = x / TILE_SIZE;
     int tileY = y / TILE_SIZE;
@@ -71,24 +69,10 @@ void drawMap(SDL_Renderer* renderer) {
                     textureRect.w = 25;
                     textureRect.h = 25;
                     SDL_RenderCopy(renderer, ballTexture, NULL, &textureRect);
-
-                    // Increase the score when a pokeball is picked up
-                    score += 10;
                 }
             }
         }
     }
-
-    // Afficher le score à l'écran
-    SDL_Color textColor = {255, 255, 255}; // Couleur du texte : blanc
-    char scoreText[50]; // Variable pour stocker le texte du score
-    sprintf(scoreText, "Score: %d", score); // Formater le texte avec le score actuel
-    SDL_Surface* textSurface = TTF_RenderText_Solid(font, scoreText, textColor); // Créer une surface de texte à partir du texte formatté
-    SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface); // Créer une texture à partir de la surface de texte
-    SDL_Rect textRect = {10, 10, textSurface->w, textSurface->h}; // Position et taille du texte
-    SDL_RenderCopy(renderer, textTexture, NULL, &textRect); // Afficher le texte sur le rendu
-    SDL_FreeSurface(textSurface); // Libérer la surface de texte
-    SDL_DestroyTexture(textTexture); // Libérer la texture de texte
 }
 
 void initGame() {
@@ -221,6 +205,7 @@ void initGame() {
                     currentTileY >= 0 && currentTileY < MAP_HEIGHT && 
                     map[currentTileY][currentTileX] != 2) {
                     map[currentTileY][currentTileX] = 2;
+                    gameScore += 10; // Increase game score by 10 for each pokeball collected
                 }
 
                 currentTileX = playerTileX2;
@@ -230,6 +215,7 @@ void initGame() {
                     currentTileY >= 0 && currentTileY < MAP_HEIGHT && 
                     map[currentTileY][currentTileX] != 2) {
                     map[currentTileY][currentTileX] = 2;
+                    gameScore += 10; // Increase game score by 10 for each pokeball collected
                 }
             }
         } else {
@@ -264,6 +250,7 @@ void initGame() {
                         currentTileY >= 0 && currentTileY < MAP_HEIGHT && 
                         map[currentTileY][currentTileX] != 2) {
                         map[currentTileY][currentTileX] = 2;
+                        gameScore += 10; // Increase game score by 10 for each pokeball collected
                     }
 
                     currentTileX = playerTileX2;
@@ -273,6 +260,7 @@ void initGame() {
                         currentTileY >= 0 && currentTileY < MAP_HEIGHT && 
                         map[currentTileY][currentTileX] != 2) {
                         map[currentTileY][currentTileX] = 2;
+                        gameScore += 10; // Increase game score by 10 for each pokeball collected
                     }
                 }
             }
