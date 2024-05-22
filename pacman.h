@@ -13,6 +13,8 @@
 #define TILE_SIZE 50
 #define MAP_WIDTH 27
 #define MAP_HEIGHT 17
+#define SPEED 2
+
 int gameScore = 0;
 
 int theMain();
