@@ -6,6 +6,7 @@ SDL_Renderer* renderer = NULL;
 SDL_Texture* backgroundTexture = NULL;
 SDL_Texture* playerTextures[4] = {NULL, NULL, NULL, NULL}; // Textures pour les 4 directions
 SDL_Texture* ballTexture = NULL;
+SDL_Texture* superballTexture = NULL;
 SDL_Rect playerRect;
 
 // Directions indices
@@ -39,6 +40,22 @@ int isCollision(int x, int y) {
     return map[tileY][tileX] == 1;
 }
 
+void addSuperball() {
+
+    // Initialiser le générateur de nombres pseudo-aléatoires avec une graine différente
+    srand(time(NULL));
+
+    int count = 0;
+    while (count < 4) {
+        int x = rand() % MAP_WIDTH;
+        int y = rand() % MAP_HEIGHT;
+        if (map[y][x] == 0) {
+            map[y][x] = 3; // Placer une superball
+            count++;
+        }
+    }
+}
+
 void drawMap(SDL_Renderer* renderer) {
     // Load and render the background map image
     SDL_Surface* mapSurface = SDL_LoadBMP("./image/map.bmp");
@@ -61,14 +78,23 @@ void drawMap(SDL_Renderer* renderer) {
             tileRect.x = x * TILE_SIZE;
             tileRect.y = y * TILE_SIZE;
             if (map[y][x] != 1){
-                if (map[y][x] != 2) {
+                if (map[y][x] == 0) {
                     // Render the texture for the pokeball
                     SDL_Rect textureRect;
-                    textureRect.x = tileRect.x + (TILE_SIZE - 25) / 2;
-                    textureRect.y = tileRect.y + (TILE_SIZE - 25) / 2;
+                    textureRect.x = tileRect.x + (TILE_SIZE - 22) / 2;
+                    textureRect.y = tileRect.y + (TILE_SIZE - 30) / 2;
                     textureRect.w = 25;
                     textureRect.h = 25;
                     SDL_RenderCopy(renderer, ballTexture, NULL, &textureRect);
+                }
+                else if (map[y][x] == 3) {
+                    // Render the texture for the superball
+                    SDL_Rect textureRect;
+                    textureRect.x = tileRect.x + (TILE_SIZE - 28) / 2;
+                    textureRect.y = tileRect.y + (TILE_SIZE - 35) / 2;
+                    textureRect.w = 30;
+                    textureRect.h = 30;
+                    SDL_RenderCopy(renderer, superballTexture, NULL, &textureRect);
                 }
             }
         }
@@ -121,6 +147,17 @@ void initGame() {
     ballTexture = SDL_CreateTextureFromSurface(renderer, ballSurface);
     SDL_FreeSurface(ballSurface);
 
+    // Load ball texture
+    SDL_Surface* superballSurface = SDL_LoadBMP("./sprites/superball.bmp");
+    if (superballSurface == NULL) {
+        printf("Failed to load ball image! SDL_Error: %s\n", SDL_GetError());
+        return;
+    }
+    superballTexture = SDL_CreateTextureFromSurface(renderer, superballSurface);
+    SDL_FreeSurface(superballSurface);
+
+
+
     // Set initial position of player
     playerRect.x = 650;
     playerRect.y = 350;
@@ -140,6 +177,8 @@ void initGame() {
     // Boucle principale
     SDL_Event event;
     int quit = 0;
+
+    addSuperball();
 
     while (!quit) {
 
@@ -179,88 +218,70 @@ void initGame() {
         int newY2 = (playerRect.y + dy + playerRect.h) / TILE_SIZE;
 
         // Vérifier si le mouvement proposé ferait entrer player en collision avec un mur
-        if (newX1 >= 0 && newX1 < MAP_WIDTH && newY1 >= 0 && newY1 < MAP_HEIGHT &&
-            newX2 >= 0 && newX2 < MAP_WIDTH && newY2 >= 0 && newY2 < MAP_HEIGHT &&
-            map[newY1][newX1] != 1 && map[newY1][newX2] != 1 && 
-            map[newY2][newX1] != 1 && map[newY2][newX2] != 1) {
-            // If all the new positions are empty tiles (0), then move the player
+        int collision = 0;
+        for (int y = newY1; y <= newY2 && !collision; ++y) {
+            for (int x = newX1; x <= newX2 && !collision; ++x) {
+                if (x >= 0 && x < MAP_WIDTH && y >= 0 && y < MAP_HEIGHT && map[y][x] == 1) {
+                    collision = 1;
+                }
+            }
+        }
+
+        if (!collision) {
+            // Si toutes les nouvelles positions sont des tuiles vides (0), déplacez le joueur
             playerRect.x += dx;
             playerRect.y += dy;
-            last_dx = dx; // Update the last valid direction
+            last_dx = dx; // Mettre à jour la dernière direction valide
             last_dy = dy;
 
-            // Update the map to show the player's trail
-            int playerTileX1 = playerRect.x / TILE_SIZE;
-            int playerTileY1 = playerRect.y / TILE_SIZE;
-            int playerTileX2 = (playerRect.x + playerRect.w) / TILE_SIZE;
-            int playerTileY2 = (playerRect.y + playerRect.h) / TILE_SIZE;
-
-            // Vérifier si un des coins du joueur est entré dans une nouvelle case
-            if (playerTileX1 != currentTileX || playerTileY1 != currentTileY ||
-                playerTileX2 != currentTileX || playerTileY2 != currentTileY) {
-                currentTileX = playerTileX1;
-                currentTileY = playerTileY1;
-
-                if (currentTileX >= 0 && currentTileX < MAP_WIDTH && 
-                    currentTileY >= 0 && currentTileY < MAP_HEIGHT && 
-                    map[currentTileY][currentTileX] != 2) {
-                    map[currentTileY][currentTileX] = 2;
-                    gameScore += 10; // Increase game score by 10 for each pokeball collected
-                }
-
-                currentTileX = playerTileX2;
-                currentTileY = playerTileY2;
-
-                if (currentTileX >= 0 && currentTileX < MAP_WIDTH && 
-                    currentTileY >= 0 && currentTileY < MAP_HEIGHT && 
-                    map[currentTileY][currentTileX] != 2) {
-                    map[currentTileY][currentTileX] = 2;
-                    gameScore += 10; // Increase game score by 10 for each pokeball collected
+            // Mettre à jour la carte pour montrer le chemin du joueur
+            for (int y = newY1; y <= newY2; ++y) {
+                for (int x = newX1; x <= newX2; ++x) {
+                    if (x >= 0 && x < MAP_WIDTH && y >= 0 && y < MAP_HEIGHT && map[y][x] != 2) {
+                        if(map[y][x] == 3){
+                            gameScore += 50; // Augmenter le score du jeu de 50 pour chaque superball collectée
+                        }
+                        else{
+                            gameScore += 10; // Augmenter le score du jeu de 10 pour chaque pokeball collectée
+                        }
+                        map[y][x] = 2;
+                    }
                 }
             }
         } else {
-            // Calculate the proposed new positions for all corners of the hitbox using the last valid direction
+            // Calculer les nouvelles positions proposées pour tous les coins de la hitbox en utilisant la dernière direction valide
             newX1 = (playerRect.x + last_dx) / TILE_SIZE;
             newY1 = (playerRect.y + last_dy) / TILE_SIZE;
             newX2 = (playerRect.x + last_dx + playerRect.w) / TILE_SIZE;
             newY2 = (playerRect.y + last_dy + playerRect.h) / TILE_SIZE;
 
-            // Check if the movement in the last valid direction would cause the player to collide with a wall
-            if (newX1 >= 0 && newX1 < MAP_WIDTH && newY1 >= 0 && newY1 < MAP_HEIGHT &&
-                newX2 >= 0 && newX2 < MAP_WIDTH && newY2 >= 0 && newY2 < MAP_HEIGHT &&
-                map[newY1][newX1] != 1 && map[newY1][newX2] != 1 && 
-                map[newY2][newX1] != 1 && map[newY2][newX2] != 1) {
-                // If all the new positions are empty tiles (0), then move the player
+            // Vérifier si le déplacement dans la dernière direction valide entraînerait une collision avec un mur
+            collision = 0;
+            for (int y = newY1; y <= newY2 && !collision; ++y) {
+                for (int x = newX1; x <= newX2 && !collision; ++x) {
+                    if (x >= 0 && x < MAP_WIDTH && y >= 0 && y < MAP_HEIGHT && map[y][x] == 1) {
+                        collision = 1;
+                    }
+                }
+            }
+
+            if (!collision) {
+                // Si toutes les nouvelles positions sont des tuiles vides (0), déplacez le joueur
                 playerRect.x += last_dx;
                 playerRect.y += last_dy;
 
-                // Update the map to show the player's trail
-                int playerTileX1 = playerRect.x / TILE_SIZE;
-                int playerTileY1 = playerRect.y / TILE_SIZE;
-                int playerTileX2 = (playerRect.x + playerRect.w) / TILE_SIZE;
-                int playerTileY2 = (playerRect.y + playerRect.h) / TILE_SIZE;
-
-                // Vérifier si un des coins du joueur est entré dans une nouvelle case
-                if (playerTileX1 != currentTileX || playerTileY1 != currentTileY ||
-                    playerTileX2 != currentTileX || playerTileY2 != currentTileY) {
-                    currentTileX = playerTileX1;
-                    currentTileY = playerTileY1;
-
-                    if (currentTileX >= 0 && currentTileX < MAP_WIDTH && 
-                        currentTileY >= 0 && currentTileY < MAP_HEIGHT && 
-                        map[currentTileY][currentTileX] != 2) {
-                        map[currentTileY][currentTileX] = 2;
-                        gameScore += 10; // Increase game score by 10 for each pokeball collected
-                    }
-
-                    currentTileX = playerTileX2;
-                    currentTileY = playerTileY2;
-
-                    if (currentTileX >= 0 && currentTileX < MAP_WIDTH && 
-                        currentTileY >= 0 && currentTileY < MAP_HEIGHT && 
-                        map[currentTileY][currentTileX] != 2) {
-                        map[currentTileY][currentTileX] = 2;
-                        gameScore += 10; // Increase game score by 10 for each pokeball collected
+                // Mettre à jour la carte pour montrer le chemin du joueur
+                for (int y = newY1; y <= newY2; ++y) {
+                    for (int x = newX1; x <= newX2; ++x) {
+                        if (x >= 0 && x < MAP_WIDTH && y >= 0 && y < MAP_HEIGHT && map[y][x] != 2) {
+                            if(map[y][x] == 3){
+                                gameScore += 50; // Augmenter le score du jeu de 50 pour chaque superball collectée
+                            }
+                            else{
+                                gameScore += 10; // Augmenter le score du jeu de 10 pour chaque pokeball collectée
+                            }
+                            map[y][x] = 2;
+                        }
                     }
                 }
             }

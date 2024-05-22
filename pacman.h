@@ -6,6 +6,7 @@
 #include <SDL2/SDL.h>
 #include <SDL.h>
 #include <stdbool.h>
+#include <time.h>
 
 #define WINDOW_WIDTH 1350
 #define WINDOW_HEIGHT 850
