@@ -9,7 +9,7 @@ typedef struct
     int score;
 } ScoreEntry;
 
-void saveScores(void)
+void saveScores(int playerScore) // Ajoutez le score du joueur en tant que paramètre
 {
     ScoreEntry scores[3];
     ScoreEntry newEntry;
@@ -79,15 +79,10 @@ void saveScores(void)
             {
                 if (event.key.keysym.sym == SDLK_RETURN)
                 {
-                    // Si la touche Entrée est pressée, passer à l'entrée du score
                     if (enterName)
                     {
                         strncpy(newEntry.name, input, 21);
-                        enterName = false;
-                    }
-                    else
-                    {
-                        newEntry.score = atoi(input);
+                        newEntry.score = playerScore; // Utilisez le score du joueur passé en paramètre
                         running = false;
                     }
                     memset(input, 0, 21);
