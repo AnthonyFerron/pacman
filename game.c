@@ -43,6 +43,19 @@ int isCollision(int x, int y)
     return map[tileY][tileX] == 1;
 }
 
+// Ajoutez cette fonction pour vérifier si deux rectangles se chevauchent
+int isOverlap(SDL_Rect *rect1, SDL_Rect *rect2)
+{
+    if (rect1->x < rect2->x + rect2->w &&
+        rect1->x + rect1->w > rect2->x &&
+        rect1->y < rect2->y + rect2->h &&
+        rect1->y + rect1->h > rect2->y)
+    {
+        return 1;
+    }
+    return 0;
+}
+
 // Ajoutez ces variables pour stocker la direction des fantômes
 int ghost1_dx = 0, ghost1_dy = SPEED;
 int ghost2_dx = 0, ghost2_dy = SPEED;
@@ -378,6 +391,14 @@ void initGame()
                 }
                 currentTileX = playerTileX;
                 currentTileY = playerTileY;
+            }
+            // Dans votre boucle principale, vérifiez si le joueur a heurté un fantôme
+            if (isOverlap(&playerRect, &ghost1Rect) ||
+                isOverlap(&playerRect, &ghost2Rect) ||
+                isOverlap(&playerRect, &ghost3Rect) ||
+                isOverlap(&playerRect, &ghost4Rect))
+            {
+                quit = 1; // Fermez le jeu si le joueur a heurté un fantôme
             }
         }
         else
