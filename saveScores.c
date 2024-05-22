@@ -3,13 +3,15 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "saveScores.h"
+
 typedef struct
 {
     char name[21];
     int score;
 } ScoreEntry;
 
-void saveScores(void)
+void saveScores(int score)
 {
     ScoreEntry scores[3];
     ScoreEntry newEntry;
@@ -87,7 +89,7 @@ void saveScores(void)
                     }
                     else
                     {
-                        newEntry.score = atoi(input);
+                        newEntry.score = newEntry.score = score; // Utilisez le score passé en argument;
                         running = false;
                     }
                     memset(input, 0, 21);

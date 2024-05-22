@@ -1,4 +1,5 @@
 #include "pacman.h"
+#include "saveScores.h"
 #include <math.h>
 
 SDL_Window *window = NULL;
@@ -260,7 +261,8 @@ void initGame()
 
         if (!checkRemainingPokeballs())
         {
-            quit = 1; // Fin du jeu s'il n'y a plus de pokeballs ou superballs
+            saveScores(gameScore); // Appeler la fonction pour sauvegarder les scores
+            gameScore = 0;
         }
 
         // Calculer les nouvelles positions proposées pour tous les coins de la hitbox
