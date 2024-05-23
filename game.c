@@ -75,12 +75,6 @@ void changeGhostDirection(int *dx, int *dy)
     }
 }
 
-int isCollision(int x, int y) {
-    int tileX = x / TILE_SIZE;
-    int tileY = y / TILE_SIZE;
-    return map[tileY][tileX] == 1;
-}
-
 void addSuperball() {
 
     // Initialiser le générateur de nombres pseudo-aléatoires avec une graine différente
