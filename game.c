@@ -1,4 +1,5 @@
 #include "pacman.h"
+#include "saveScores.h"
 #include <math.h>
 
 SDL_Window* window = NULL;
@@ -19,7 +20,7 @@ enum { UP, DOWN, LEFT, RIGHT };
 
 //initialisation de la map en 24 par 15
 
-int map[MAP_HEIGHT][MAP_WIDTH] = {
+int initialMap[MAP_HEIGHT][MAP_WIDTH] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1},
@@ -38,6 +39,32 @@ int map[MAP_HEIGHT][MAP_WIDTH] = {
     {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1},
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 };
+
+int map[MAP_HEIGHT][MAP_WIDTH];
+
+void resetMap() {
+    for (int y = 0; y < MAP_HEIGHT; ++y) {
+        for (int x = 0; x < MAP_WIDTH; ++x) {
+            map[y][x] = initialMap[y][x];
+        }
+    }
+}
+
+int checkRemainingPokeballs()
+{
+    for (int y = 0; y < MAP_HEIGHT; ++y)
+    {
+        for (int x = 0; x < MAP_WIDTH; ++x)
+        {
+            if (map[y][x] == 0 || map[y][x] == 3)
+            {             // 0 pour pokeball, 3 pour superball
+                return 1; // Il reste encore des pokeballs ou superballs
+            }
+        }
+    }
+    return 0; // Il n'y a plus de pokeballs ou superballs
+}
+
 
 int isOverlap(SDL_Rect *rect1, SDL_Rect *rect2)
 {
@@ -258,6 +285,7 @@ void initGame() {
     SDL_Event event;
     int quit = 0;
 
+    resetMap();
     addSuperball();
 
     while (!quit) {
@@ -269,6 +297,7 @@ void initGame() {
                 switch (event.key.keysym.sym) {
                     case SDLK_ESCAPE:
                         quit = 1;
+                        resetMap();
                         break;
                     case SDLK_UP:
                         dx = 0;
@@ -292,6 +321,12 @@ void initGame() {
                         break;
                 }
             }
+        }
+
+        if (!checkRemainingPokeballs())
+        {
+            saveScores(); // Appeler la fonction pour sauvegarder les scores
+            gameScore = 0;
         }
 
         // Calculer les nouvelles positions proposées pour tous les coins de la hitbox
@@ -485,6 +520,9 @@ void initGame() {
         // Update the renderer
         SDL_RenderPresent(renderer);
     }
+
+    saveScores(gameScore); // Appeler la fonction pour sauvegarder les scores
+    gameScore = 0;
 
     // Clean up resources before exiting
     for (int i = 0; i < 4; ++i) {
